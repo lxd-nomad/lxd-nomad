@@ -10,7 +10,6 @@ setup(
     version=nomad.__version__,
     packages=find_packages(),
     install_requires=[
-        'Click',
         'pylxd',
         'pyyaml',
     ],

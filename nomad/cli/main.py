@@ -2,63 +2,60 @@
 
 from __future__ import unicode_literals
 
+import argparse
 import logging
 import sys
-
-import click
 
 from .. import __version__
 
 from .project import get_project
 
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-
 logger = logging.getLogger(__name__)
 console_handler = logging.StreamHandler(sys.stderr)
 
 
-@click.group(context_settings=CONTEXT_SETTINGS)
-@click.option('-v', '--verbose', count=True)
-@click.version_option(version=__version__)
-@click.pass_context
-def nomad(ctx, verbose):
-    """ Orchestrate and run multiple containers using LXD. """
-    # Handles vertbosity
-    if verbose:
-        console_handler.setLevel(logging.DEBUG)
-    else:
-        console_handler.setLevel(logging.INFO)
+class Nomad(object):
+    """ Wrapper around  the LXD-Nomad argument parser and the related actions. """
 
-    # Initializes the project and store it in the commands' shared context
-    ctx.obj['project'] = get_project()
+    def __init__(self):
+        # Create the argument parsers
+        parser = argparse.ArgumentParser(
+            description='Orchestrate and run multiple containers using LXD.', prog='LXD-Nomad')
+        parser.add_argument(
+            '--version', action='version', version='%(prog)s {v}'.format(v=__version__))
+        parser.add_argument('-v', '--verbose', action='store_true')
+        subparsers = parser.add_subparsers(dest='action')
+        subparsers.add_parser('destroy', help='Stop and remove containers.')
+        subparsers.add_parser('halt', help='Stop containers.')
+        subparsers.add_parser('provision', help='Provision containers.')
+        subparsers.add_parser('up', help='Create, start and provisions containers.')
 
+        # Parses the arguments
+        args = parser.parse_args()
 
-@nomad.command()
-@click.pass_context
-def up(ctx, **kwargs):
-    """ Create, start and provisions containers. """
-    ctx.obj['project'].up()
+        # Handles vertbosity
+        if args.verbose:
+            console_handler.setLevel(logging.DEBUG)
+        else:
+            console_handler.setLevel(logging.INFO)
 
+        # Initializes the LXD-Nomad project
+        self.project = get_project()
 
-@nomad.command()
-@click.pass_context
-def halt(ctx, **kwargs):
-    """ Stop containers. """
-    ctx.obj['project'].halt()
+        # use dispatch pattern to invoke method with same name
+        getattr(self, args.action)(args)
 
+    def destroy(self, args):
+        self.project.destroy()
 
-@nomad.command()
-@click.pass_context
-def destroy(ctx, **kwargs):
-    """ Stop and remove containers. """
-    ctx.obj['project'].destroy()
+    def halt(self, args):
+        self.project.halt()
 
+    def provision(self, args):
+        self.project.provision()
 
-@nomad.command()
-@click.pass_context
-def provision(ctx, **kwargs):
-    """ Provision containers. """
-    ctx.obj['project'].provision()
+    def up(self, args):
+        self.project.up()
 
 
 def main():
@@ -68,5 +65,6 @@ def main():
     root_logger.setLevel(logging.DEBUG)
     # Disables requests logging
     logging.getLogger('requests').propagate = False
-    # Executes LXD-Nomad!
-    nomad(obj={})
+
+    # Run the Nomad orchestration tool!
+    Nomad()
