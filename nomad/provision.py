@@ -50,5 +50,6 @@ def provision_with_ansible(container, provisioning_item):
         tmpinv.write("{} ansible_user=root".format(ip).encode('ascii'))
         tmpinv.flush()
         cmd = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i {} {}".format(tmpinv.name, provisioning_item['playbook'])
+        logger.debug(cmd)
         p = subprocess.Popen(cmd, shell=True)
         p.wait()
