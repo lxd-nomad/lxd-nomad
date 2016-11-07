@@ -9,12 +9,10 @@ Barely functional, work in progress.
 ## Requirements
 
 * A functional LXD. You should be able to run `lxc launch` and have a container with an IPv4
-  address running.
+  address running
 * Proper permissions to run the `lxc` command. That usually means adding your user to the `lxd`
-  group.
-* Local LXD images. *LXD-Nomad* doesn't manage image copying. When you refer to `debian/jessie`, you need
-  to have already coplied the image locally and properly aliased it.
-* `getfacl/setfacl` if you use shared folders.
+  group
+* `getfacl/setfacl` if you use shared folders
 * pylxd
 * ansible
 
