@@ -40,6 +40,29 @@ provisioning:
 ... and that you have a pre-configured `jessie` container that works, you should be able to get
 *something* out of `nomad` commands made in the same folder.
 
+You can also choose to define a container that will be created by pulling directly one of the image
+hosted on https://images.linuxcontainers.org/: this is the "pull" mode:
+
+```
+name: myproject
+image: ubuntu/xenial/amd64
+mode: pull
+hostnames:
+  - myproject.local
+shares:
+  - source: .
+    dest: /myshare
+provisioning:
+  - type: ansible
+    playbook: deploy/site.yml
+```
+
+It should be noted that the ``image`` value should contain a name of a container alias that includes
+the targetted architecture (eg. ``debian/jessie/amd64`` or ``ubuntu/xenial/armhf``). The image will
+be pulled from the https://images.linuxcontainers.org/ image server by default (so you can get a
+list of supported aliases by using the ``lxc image alias list images:`` command). You can also
+choose to use another server by manually setting the ``server`` value.
+
 ## Privileged containers
 
 There seems to be some problems with containers running systemd-based systems. Their init system
