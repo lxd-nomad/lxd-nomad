@@ -188,9 +188,12 @@ class Container(object):
                 # will be determined using a local alias. In "pull" mode the image will be fetched
                 # from a remote server using a remote alias.
                 'mode': mode,
-                # The 'protocol' to use. LXD supports two protocol: 'lxd' (default - RESTful API
-                # that is used between the clients and a LXD daemon) and 'simplestreams'.
-                'protocol': self.options.get('protocol', 'lxd'),
+                # The 'protocol' to use. LXD supports two protocol: 'lxd' (RESTful API that is used
+                # between the clients and a LXD daemon) and 'simplestreams' (an image server
+                # description format, using JSON to describe a list of images and allowing to get
+                # image information and import images). We use "simplestreams" by default (as the
+                # lxc command do).
+                'protocol': self.options.get('protocol', 'simplestreams'),
                 # The 'server' that should be used to fetch the images. We use the default
                 # linuxcontainers server for LXC and LXD when no value is provided (and if we are
                 # not in "local" mode).
