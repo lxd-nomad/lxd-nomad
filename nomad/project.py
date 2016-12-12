@@ -3,6 +3,7 @@
 import logging
 
 from .container import Container
+from .logging import console_handler
 
 logger = logging.getLogger(__name__)
 
@@ -26,17 +27,17 @@ class Project(object):
 
     def destroy(self):
         """ Destroys the containers of the project. """
-        for container in self.containers:
+        for container in self._containers_generator():
             container.destroy()
 
     def halt(self):
         """ Stops containers of the project. """
-        for container in self.containers:
+        for container in self._containers_generator():
             container.halt()
 
     def provision(self):
         """ Provisions the containers of the project. """
-        for container in self.containers:
+        for container in self._containers_generator():
             container.provision()
 
     def shell(self):
@@ -45,5 +46,14 @@ class Project(object):
 
     def up(self):
         """ Creates, starts and provisions the containers of the project. """
-        for container in self.containers:
+        [logger.info('Bringing container "{}" up'.format(c.name)) for c in self.containers]
+        for container in self._containers_generator():
             container.up()
+
+    def _containers_generator(self):
+        for container in self.containers:
+            console_handler.setFormatter(logging.Formatter(
+                '==> {name}: %(message)s'.format(name=container.name)))
+            yield container
+        console_handler.setFormatter(logging.Formatter('%(message)s'))
+        logger.addHandler(console_handler)

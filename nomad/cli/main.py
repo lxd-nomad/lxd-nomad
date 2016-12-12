@@ -2,14 +2,13 @@
 
 import argparse
 import logging
-import sys
 
 from .. import __version__
+from ..logging import console_handler
 
 from .project import get_project
 
 logger = logging.getLogger(__name__)
-console_handler = logging.StreamHandler(sys.stderr)
 
 
 class Nomad(object):
