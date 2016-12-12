@@ -40,7 +40,7 @@ class Project(object):
             container.provision()
 
     def shell(self):
-        """Opens a new shell in our first container. """
+        """ Opens a new shell in our first container. """
         self.containers[0].shell()
 
     def up(self):
