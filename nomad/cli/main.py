@@ -66,6 +66,7 @@ def main():
     root_logger.setLevel(logging.DEBUG)
     # Disables requests logging
     logging.getLogger('requests').propagate = False
+    logging.getLogger('ws4py').propagate = False
 
     # Run the Nomad orchestration tool!
     Nomad()
