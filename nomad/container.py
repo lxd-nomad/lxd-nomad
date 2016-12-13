@@ -97,7 +97,7 @@ class Container(object):
         self._container.save(wait=True)
 
     def shell(self):
-        """Opens a new interactive shell in the container. """
+        """ Opens a new interactive shell in the container. """
         # For now, it's much easier to call `lxc`, but eventually, we might want to contribute
         # to pylxd so it supports `interactive = True` in `exec()`.
         shellcfg = self.options.get('shell', {})
@@ -170,7 +170,16 @@ class Container(object):
 
     @property
     def name(self):
+        """ Returns the name of the container. """
         return self._name or (self.project_name + str(self._creation_counter))
+
+    @property
+    def nid(self):
+        """ Returns the Nomad identifier of the container.
+
+        NID stands for Nomad IDentifier. Just an internal ID used for container recognition, though.
+        """
+        return self.homedir + '--' + self.name
 
     ##################################
     # PRIVATE METHODS AND PROPERTIES #
@@ -187,7 +196,7 @@ class Container(object):
         """ Gets or creates the PyLXD container. """
         container = None
         for _container in self.client.containers.all():
-            if _container.config.get('user.nomad.homedir') == str(self.homedir):
+            if _container.config.get('user.nomad.nid') == str(self.nid):
                 container = _container
         if container is not None:
             return container
@@ -233,6 +242,7 @@ class Container(object):
             'config': {
                 'security.privileged': 'true' if privileged else 'false',
                 'user.nomad.homedir': self.homedir,
+                'user.nomad.nid': self.nid,
             },
         }
         try:
