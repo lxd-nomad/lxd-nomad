@@ -2,6 +2,7 @@
 
 import argparse
 import logging
+import sys
 
 from .. import __version__
 from ..logging import console_handler
@@ -30,6 +31,11 @@ class Nomad(object):
 
         # Parses the arguments
         args = parser.parse_args()
+
+        # Displays the help if no action is specified
+        if args.action is None:
+            parser.print_help()
+            sys.exit(1)
 
         # Handles verbosity
         if args.verbose:
