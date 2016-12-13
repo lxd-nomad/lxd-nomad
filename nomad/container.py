@@ -34,7 +34,7 @@ class Container(object):
         self.homedir = homedir
         self.client = client
         self.options = options
-        self._name = name
+        self.container_name = name
 
         # Updates the creation counter to allow containers instances to have a unique name - in the
         # scope of the considered projec - when container names are not defined.
@@ -171,7 +171,7 @@ class Container(object):
     @property
     def name(self):
         """ Returns the name of the container. """
-        return self._name or (self.project_name + str(self._creation_counter))
+        return self.container_name or (self.project_name + str(self._creation_counter))
 
     @property
     def nid(self):
