@@ -74,13 +74,9 @@ class Config(object):
         values. These global values can be defined outside of the scope of the container's config
         and can be used by each container.
         """
-        container_config = {}
+        container_config = dict(self._dict)
         container_config.update(container_dict)
-        global_config = dict(self._dict)
-        del global_config['containers']
-        for k, v in global_config.items():
-            if k not in container_config:
-                container_config[k] = v
+        del container_config['containers']
         return container_config
 
     def _load_yml(self):
