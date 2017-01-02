@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import json
 import logging
 import os
 import subprocess
 import time
 
 import pylxd
+from pylxd.exceptions import NotFound
 
 from . import constants
 from .exceptions import ContainerOperationFailed
 from .network import EtcHosts, find_free_ip, get_ipv4_ip
 from .provision import prepare_debian, provision_with_ansible, set_static_ip_on_debian
+from .utils.identifier import uniqid
+from .utils.text import slugify
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +37,7 @@ class Container(object):
         self.container_name = name
 
         # Updates the creation counter to allow containers instances to have a unique name - in the
-        # scope of the considered projec - when container names are not defined.
+        # scope of the considered project - when container names are not defined.
         self._creation_counter = Container._creation_counter
         Container._creation_counter += 1
 
@@ -150,6 +154,10 @@ class Container(object):
     ##################################
 
     @property
+    def id(self):
+        return self._get_or_create_metadata('id', uniqid())
+
+    @property
     def is_provisioned(self):
         """ Returns a boolean indicating of the container is provisioned. """
         return self._container.config.get('user.nomad.provisioned') == 'true'
@@ -165,17 +173,25 @@ class Container(object):
         return self._container.status_code == constants.CONTAINER_STOPPED
 
     @property
+    def lxd_name(self):
+        """ Returns the name of the container that is used in the scope of LXD.
+
+        This name id supposed to be unique among all the containers managed by LXD.
+        """
+        # Note: all container names must be a valid hostname! That is: maximum 63 characters, no
+        # dots, no digit at first position, made entirely of letters/digits/hyphens, ...
+        if not hasattr(self, '_lxd_name'):
+            lxd_name_prefix = '{project_slug}-{name}'.format(
+                project_slug=slugify(self.project_name), name=self.name)
+            container_id = self.id
+            self._lxd_name = '{prefix}-{id}'.format(
+                prefix=lxd_name_prefix[:63 - len(container_id)], id=container_id)
+        return self._lxd_name
+
+    @property
     def name(self):
         """ Returns the name of the container. """
         return self.container_name or (self.project_name + str(self._creation_counter))
-
-    @property
-    def nid(self):
-        """ Returns the Nomad identifier of the container.
-
-        NID stands for Nomad IDentifier. Just an internal ID used for container recognition, though.
-        """
-        return self.homedir + '--' + self.name
 
     ##################################
     # PRIVATE METHODS AND PROPERTIES #
@@ -188,13 +204,36 @@ class Container(object):
         self._container.config['user.nomad.static_ip'] = 'true'
         self._container.save(wait=True)
 
+    def _get_or_create_metadata(self, key, new_value):
+        """ Returns the value associated with the key.
+
+        The <key, value> pair is created if it cannot be retrieved from the metadata file.
+        """
+        metadata_filename = self.name + '.json'
+        metadata_filepath = os.path.join(
+            self.homedir, constants.METADATA_CONTAINERS_DIR, metadata_filename)
+        metadata_exists = os.path.exists(metadata_filepath)
+
+        metadata = {}
+        if metadata_exists:
+            with open(metadata_filepath, 'r+') as fp:
+                metadata = json.loads(fp.read())
+
+        value = metadata.get(key, new_value)
+        metadata[key] = value
+
+        with open(metadata_filepath, 'w+') as fp:
+            fp.write(json.dumps(metadata))
+
+        return value
+
     def _get_container(self, create=True):
         """ Gets or creates the PyLXD container. """
-        container = None
-        for _container in self.client.containers.all():
-            if _container.config.get('user.nomad.nid') == str(self.nid):
-                container = _container
-        if container is not None:
+        try:
+            container = self.client.containers.get(self.lxd_name)
+        except NotFound:
+            container = None
+        else:
             return container
 
         logger.warn('Unable to find container "{name}" for directory "{homedir}"'.format(
@@ -202,20 +241,13 @@ class Container(object):
         if not create:
             return
 
-        allnames = {c.name for c in self.client.containers.all()}
-        counter = 1
-        name = self.name
-        while name in allnames:
-            name = '{name}--{counter}'.format(name=self.name, counter=counter)
-            counter += 1
-
         logger.info(
             'Creating new container "{name}" '
-            'from image {image}'.format(name=name, image=self.options['image']))
+            'from image {image}'.format(name=self.lxd_name, image=self.options['image']))
         privileged = self.options.get('privileged', False)
         mode = self.options.get('mode', 'local')
         container_config = {
-            'name': name,
+            'name': self.lxd_name,
             'source': {
                 'alias': self.options['image'],
                 # The 'mode' defines how the container will be retrieved. In "local" mode the image
@@ -237,8 +269,8 @@ class Container(object):
             },
             'config': {
                 'security.privileged': 'true' if privileged else 'false',
+                'user.nomad.made': '1',
                 'user.nomad.homedir': self.homedir,
-                'user.nomad.nid': self.nid,
             },
         }
         try:

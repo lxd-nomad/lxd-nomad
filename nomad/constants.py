@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 
 
+# PROJECTS
+# --
+
+METADATA_BASE_DIR = '.nomad'
+METADATA_CONTAINERS_DIR = METADATA_BASE_DIR + '/containers'
+
 # CONTAINERS
 # --
 
