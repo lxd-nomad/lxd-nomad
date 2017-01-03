@@ -105,10 +105,10 @@ class Container(object):
             # This part is the result of quite a bit of `su` args trial-and-error.
             shellhome = shellcfg.get('home')
             homearg = '--env HOME={}'.format(shellhome) if shellhome else ''
-            cmd = 'lxc exec {} {} -- su -m {}'.format(self.name, homearg, shelluser)
+            cmd = 'lxc exec {} {} -- su -m {}'.format(self.lxd_name, homearg, shelluser)
             subprocess.call(cmd, shell=True)
         else:
-            cmd = 'lxc exec {} -- bash'.format(self.name)
+            cmd = 'lxc exec {} -- bash'.format(self.lxd_name)
             subprocess.call(cmd, shell=True)
 
     def up(self):
