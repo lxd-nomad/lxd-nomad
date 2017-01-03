@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from time import time
+import os
 
 
-def uniqid():
-    """ Returns a short and unique identifier using the hex of the current timestamp. """
-    return hex(int(time()*10000000))[2:]
+def folderid(path):
+    """ Computes a unique identifer using a folder path. """
+    stats = os.stat(path)
+    return '{dev}{ino}'.format(dev=stats.st_dev, ino=stats.st_ino)

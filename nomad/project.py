@@ -1,5 +1,4 @@
 import logging
-import os
 
 from . import constants
 from .container import Container
@@ -18,8 +17,6 @@ class Project(object):
         self.homedir = homedir
         self.client = client
         self.containers = containers
-        # Ensures the metadata directory is properly set up.
-        self._setup_metadata_dirs()
 
     @classmethod
     def from_config(cls, project_name, homedir, client, config):
@@ -103,12 +100,6 @@ class Project(object):
             yield container
         console_handler.setFormatter(logging.Formatter('%(message)s'))
         logger.addHandler(console_handler)
-
-    def _setup_metadata_dirs(self):
-        """ Creates the metadata directories associated with the project if necessary. """
-        metadata_dirs = [os.path.join(self.homedir, constants.METADATA_CONTAINERS_DIR), ]
-        for dirr in metadata_dirs:
-            os.makedirs(dirr, exist_ok=True)
 
     def _update_guest_etchosts(self):
         """ Updates /etc/hosts on **all** running nomad-managed containers.

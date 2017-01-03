@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import json
 import logging
 import os
 import subprocess
@@ -13,7 +12,7 @@ from . import constants
 from .exceptions import ContainerOperationFailed
 from .network import EtcHosts, find_free_ip, get_ipv4_ip
 from .provision import prepare_debian, provision_with_ansible, set_static_ip_on_debian
-from .utils.identifier import uniqid
+from .utils.identifier import folderid
 from .utils.text import slugify
 
 logger = logging.getLogger(__name__)
@@ -154,10 +153,6 @@ class Container(object):
     ##################################
 
     @property
-    def id(self):
-        return self._get_or_create_metadata('id', uniqid())
-
-    @property
     def is_provisioned(self):
         """ Returns a boolean indicating of the container is provisioned. """
         return self._container.config.get('user.nomad.provisioned') == 'true'
@@ -183,9 +178,11 @@ class Container(object):
         if not hasattr(self, '_lxd_name'):
             lxd_name_prefix = '{project_slug}-{name}'.format(
                 project_slug=slugify(self.project_name), name=self.name)
-            container_id = self.id
+            # We compute a project ID based on inode numbers in order to ensure that our LXD names
+            # are unique.
+            project_id = folderid(self.homedir)
             self._lxd_name = '{prefix}-{id}'.format(
-                prefix=lxd_name_prefix[:63 - len(container_id)], id=container_id)
+                prefix=lxd_name_prefix[:63 - len(project_id)], id=project_id)
         return self._lxd_name
 
     @property
@@ -203,29 +200,6 @@ class Container(object):
         set_static_ip_on_debian(self._container, forced_ip, gateway)
         self._container.config['user.nomad.static_ip'] = 'true'
         self._container.save(wait=True)
-
-    def _get_or_create_metadata(self, key, new_value):
-        """ Returns the value associated with the key.
-
-        The <key, value> pair is created if it cannot be retrieved from the metadata file.
-        """
-        metadata_filename = self.name + '.json'
-        metadata_filepath = os.path.join(
-            self.homedir, constants.METADATA_CONTAINERS_DIR, metadata_filename)
-        metadata_exists = os.path.exists(metadata_filepath)
-
-        metadata = {}
-        if metadata_exists:
-            with open(metadata_filepath, 'r') as fp:
-                metadata = json.loads(fp.read())
-
-        value = metadata.get(key, new_value)
-        metadata[key] = value
-
-        with open(metadata_filepath, 'w') as fp:
-            fp.write(json.dumps(metadata))
-
-        return value
 
     def _get_container(self, create=True):
         """ Gets or creates the PyLXD container. """
