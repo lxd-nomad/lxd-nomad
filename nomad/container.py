@@ -216,13 +216,13 @@ class Container(object):
 
         metadata = {}
         if metadata_exists:
-            with open(metadata_filepath, 'r+') as fp:
+            with open(metadata_filepath, 'r') as fp:
                 metadata = json.loads(fp.read())
 
         value = metadata.get(key, new_value)
         metadata[key] = value
 
-        with open(metadata_filepath, 'w+') as fp:
+        with open(metadata_filepath, 'w') as fp:
             fp.write(json.dumps(metadata))
 
         return value
