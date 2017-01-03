@@ -13,7 +13,6 @@ from .exceptions import ContainerOperationFailed
 from .network import EtcHosts, find_free_ip, get_ipv4_ip
 from .provision import prepare_debian, provision_with_ansible, set_static_ip_on_debian
 from .utils.identifier import folderid
-from .utils.text import slugify
 
 logger = logging.getLogger(__name__)
 
@@ -176,8 +175,8 @@ class Container(object):
         # Note: all container names must be a valid hostname! That is: maximum 63 characters, no
         # dots, no digit at first position, made entirely of letters/digits/hyphens, ...
         if not hasattr(self, '_lxd_name'):
-            lxd_name_prefix = '{project_slug}-{name}'.format(
-                project_slug=slugify(self.project_name), name=self.name)
+            lxd_name_prefix = '{project_name}-{name}'.format(
+                project_name=self.project_name, name=self.name)
             # We compute a project ID based on inode numbers in order to ensure that our LXD names
             # are unique.
             project_id = folderid(self.homedir)
