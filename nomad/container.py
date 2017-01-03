@@ -23,21 +23,11 @@ class Container(object):
     # The default image server that will be used to pull images in "pull" mode.
     _default_image_server = 'https://images.linuxcontainers.org'
 
-    # The cration counter is used to ensure that container names remain consistent if they are not
-    # explicitly set.
-    _creation_counter = 1
-
-    def __init__(self, project_name, homedir, client, name=None, **options):
+    def __init__(self, project_name, homedir, client, **options):
         self.project_name = project_name
         self.homedir = homedir
         self.client = client
         self.options = options
-        self.container_name = name
-
-        # Updates the creation counter to allow containers instances to have a unique name - in the
-        # scope of the considered project - when container names are not defined.
-        self._creation_counter = Container._creation_counter
-        Container._creation_counter += 1
 
     #####################
     # CONTAINER ACTIONS #
@@ -186,8 +176,8 @@ class Container(object):
 
     @property
     def name(self):
-        """ Returns the name of the container. """
-        return self.container_name or (self.project_name + str(self._creation_counter))
+        """ Returns the "local" name of the container. """
+        return self.options['name']
 
     ##################################
     # PRIVATE METHODS AND PROPERTIES #

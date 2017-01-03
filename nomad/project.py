@@ -78,8 +78,7 @@ class Project(object):
 
     def get_container_by_name(self, name):
         """ Returns the `Container` instance associated with the given name. """
-        containers_dict = {
-            c.container_name: c for c in self.containers if c.container_name is not None}
+        containers_dict = {c.name: c for c in self.containers}
         if name in containers_dict:
             return containers_dict[name]
 
