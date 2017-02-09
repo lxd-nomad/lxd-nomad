@@ -8,8 +8,10 @@ from pylxd.exceptions import LXDAPIException, NotFound
 
 from . import constants
 from .exceptions import ContainerOperationFailed
+from .guests import Guest
+from .hosts import Host
 from .network import EtcHosts, find_free_ip, get_ipv4_ip
-from .provision import prepare_debian, provision_with_ansible, set_static_ip_on_debian
+from .provisioners import Provisioner
 from .utils.identifier import folderid
 from .utils.lxd import get_lxd_dir
 
@@ -80,13 +82,20 @@ class Container:
             barebone = not self.is_provisioned
 
         if barebone:
-            logger.info('Doing bare bone setup on the machine...')
-            prepare_debian(self._container)
+            self._perform_barebones_setup()
 
         logger.info('Provisioning container "{name}"...'.format(name=self.name))
+
+        # Setup users if applicable.
+        self._setup_users()
+
         for provisioning_item in self.options.get('provisioning', []):
-            logger.info('Provisioning with {0}'.format(provisioning_item['type']))
-            provision_with_ansible(self._container, provisioning_item)
+            provisioning_type = provisioning_item['type'].lower()
+            provisioner_class = Provisioner.provisioners.get(provisioning_type)
+            if provisioner_class is not None:
+                provisioner = provisioner_class(self._container, provisioning_item)
+                logger.info('Provisioning with {0}'.format(provisioning_item['type']))
+                provisioner.provision()
 
         self._container.config['user.nomad.provisioned'] = 'true'
         self._container.save(wait=True)
@@ -223,7 +232,7 @@ class Container:
     def _assign_free_static_ip(self):
         """ Assigns a free static IP to the considered container. """
         forced_ip, gateway = find_free_ip(self.client)
-        set_static_ip_on_debian(self._container, forced_ip, gateway)
+        self._guest.set_static_ip_config(forced_ip, gateway)
         self._container.config['user.nomad.static_ip'] = 'true'
         self._container.save(wait=True)
 
@@ -280,6 +289,20 @@ class Container:
             logger.error("Can't create container: {error}".format(error=e))
             raise ContainerOperationFailed()
 
+    def _perform_barebones_setup(self):
+        """ Performs bare bones setup on the machine. """
+        logger.info('Doing bare bones setup on the machine...')
+
+        # First install bare bones packages on the container.
+        self._guest.install_barebones_packages()
+
+        # Then add the current user's SSH pubkey to the container's root SSH config.
+        ssh_pubkey = self._host.get_ssh_pubkey()
+        if ssh_pubkey is not None:
+            self._guest.add_ssh_pubkey_to_root_authorized_keys(ssh_pubkey)
+        else:
+            logger.warning('SSH pubkey was not found. Provisioning tools may not work correctly...')
+
     def _setup_hostnames(self, ip):
         """ Configure the potential hostnames associated with the container. """
         hostnames = self.options.get('hostnames', [])
@@ -295,7 +318,25 @@ class Container:
             logger.info("Saving host bindings to /etc/hosts. sudo may be needed")
             etchosts.save()
 
+    def _setup_ip(self):
+        """ Setup the IP address of the considered container. """
+        ip = get_ipv4_ip(self._container)
+        if not ip:
+            logger.info('No IP yet, waiting 10 seconds...')
+            ip = self._wait_for_ipv4_ip()
+        if not ip:
+            logger.info('Still no IP! Forcing a static IP...')
+            self._container.stop(wait=True)
+            self._assign_free_static_ip()
+            self._container.start(wait=True)
+            ip = self._wait_for_ipv4_ip()
+        if not ip:
+            logger.warn('STILL no IP! Container is up, but probably broken.')
+            logger.info('Maybe that restarting it will help? Not trying to provision.')
+        return ip
+
     def _setup_shares(self):
+        """ Setup the shared folders associated with the container. """
         container = self._container
 
         # First, let's make an inventory of shared sources that were already there.
@@ -341,22 +382,17 @@ class Container:
             container.devices['nomadshare%s' % i] = shareconf
         container.save(wait=True)
 
-    def _setup_ip(self):
-        """ Setup the IP address of the considered container. """
-        ip = get_ipv4_ip(self._container)
-        if not ip:
-            logger.info('No IP yet, waiting 10 seconds...')
-            ip = self._wait_for_ipv4_ip()
-        if not ip:
-            logger.info('Still no IP! Forcing a static IP...')
-            self._container.stop(wait=True)
-            self._assign_free_static_ip()
-            self._container.start(wait=True)
-            ip = self._wait_for_ipv4_ip()
-        if not ip:
-            logger.warn('STILL no IP! Container is up, but probably broken.')
-            logger.info('Maybe that restarting it will help? Not trying to provision.')
-        return ip
+    def _setup_users(self):
+        """ Creates users defined in the container's options if applicable. """
+        users = self.options.get('users', [])
+        if not users:
+            return
+
+        logger.info('Ensuring users are created...')
+        for user_config in users:
+            name = user_config.get('name')
+            home = user_config.get('home')
+            self._guest.create_user(name, home=home)
 
     def _unsetup_hostnames(self):
         """ Removes the configuration associated with the hostnames of the container. """
@@ -388,6 +424,26 @@ class Container:
         return self._pylxd_container
 
     @property
+    def _guest(self):
+        """ Returns the `Guest` instance associated with the considered container.
+
+        None is returned if no guest class can be determined for the considered container. """
+        if not hasattr(self, '_container_guest'):
+            guest_class = next((k for k in Guest.guests if k.detect(self._container)), Guest)
+            self._container_guest = guest_class(self._container)
+        return self._container_guest
+
+    @property
     def _has_static_ip(self):
         """ Returns a boolean indicating if the container has a static IP. """
         return self._container.config.get('user.nomad.static_ip') == 'true'
+
+    @property
+    def _host(self):
+        """ Returns the `Host` instance associated with the considered host.
+
+        None is returned if no guest class can be determined for the considered container. """
+        if not hasattr(self, '_container_host'):
+            host_class = next((k for k in Host.hosts if k.detect()), Host)
+            self._container_host = host_class()
+        return self._container_host
