@@ -7,8 +7,10 @@
 
 import os
 import platform
+import subprocess
 from pathlib import Path
 
+from ..utils.lxd import get_lxd_dir
 from ..utils.metaclass import with_metaclass
 
 __all__ = ['Host', ]
@@ -65,6 +67,9 @@ class Host(with_metaclass(_HostBase)):
     # The `name` of a host is a required attribute and should always be set on `Host` subclasses.
     name = None
 
+    def __init__(self, lxd_container):
+        self.lxd_container = lxd_container
+
     @classmethod
     def detect(cls, lxd_container):
         """ Detects if the host is an "instance" of the considered OS/distribution. """
@@ -77,3 +82,30 @@ class Host(with_metaclass(_HostBase)):
             return pubkey_path.open().read()
         except FileNotFoundError:
             pass
+
+    def give_current_user_access_to_share(self, source):
+        """ Give read/write access to `source` for the current user. """
+        subprocess.Popen('setfacl -Rdm u:{}:rwX {}'.format(os.getuid(), source), shell=True).wait()
+
+    def give_mapped_user_access_to_share(self, source, userpath=None):
+        """ Give read/write access to `source` for the mapped user owning `userpath`.
+
+        `userpath` is a path that is relative to the LXD base directory (where LXD store contaners).
+        """
+        # LXD uses user namespaces when running safe containers. This means that it maps a set of
+        # uids and gids on the host to a set of uids and gids in the container.
+        # When considering unprivileged containers we want to ensure that the "root user" (or any
+        # other user) of such containers have the proper rights to write in shared folders. To do so
+        # we have to retrieve the UserID on the host-side that is mapped to the "root"'s UserID (or
+        # any other user's UserID) on the guest-side. This will allow to set ACL on the host-side
+        # for this UID. By doing this we will also allow "root" user on the guest-side to read/write
+        # in shared folders.
+        container_path_parts = [get_lxd_dir(), 'containers', self.lxd_container.name, 'rootfs']
+        container_path_parts += userpath.split('/') if userpath else []
+        container_path = os.path.join(*container_path_parts)
+        container_path_stats = os.stat(container_path)
+        host_userpath_uid = container_path_stats.st_uid
+        subprocess.Popen(
+            'setfacl -Rm user:lxd:rwx,default:user:lxd:rwx,'
+            'user:{0}:rwx,default:user:{0}:rwx {1}'.format(host_userpath_uid, source),
+            shell=True).wait()
