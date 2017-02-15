@@ -7,7 +7,7 @@ class ArchLinuxGuest(Guest):
     name = 'arch'
     barebones_packages = [
         'openssh',
-        'python',
+        'python2',
     ]
 
     def install_barebones_packages(self):
