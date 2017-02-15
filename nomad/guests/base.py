@@ -121,11 +121,6 @@ class Guest(with_metaclass(_GuestBase)):
         # This method should be overriden in `Guest` subclasses.
         self._warn_guest_not_supported('for installing bare bones packages')
 
-    def set_static_ip_config(self, ip, gateway):
-        """ Sets the passed ip & gateway in the current container. """
-        # This method should be overriden in `Guest` subclasses.
-        self._warn_guest_not_supported('for setting static ip config')
-
     ##################
     # HELPER METHODS #
     ##################

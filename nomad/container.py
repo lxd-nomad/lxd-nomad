@@ -10,7 +10,7 @@ from . import constants
 from .exceptions import ContainerOperationFailed
 from .guests import Guest
 from .hosts import Host
-from .network import EtcHosts, find_free_ip, get_ipv4_ip
+from .network import EtcHosts, get_ipv4_ip
 from .provisioners import Provisioner
 from .utils.identifier import folderid
 
@@ -119,11 +119,6 @@ class Container:
             logger.info('Container "{name}" is already running'.format(name=self.name))
             return
 
-        if self._has_static_ip:
-            # If the container already previously received a static IP, we don't need to wait until
-            # the container has started to assign it a new (and free) static IP. We do it now.
-            self._assign_free_static_ip()
-
         logger.info('Starting container "{name}"...'.format(name=self.name))
         self._container.start(wait=True)
         if not self.is_running:
@@ -227,13 +222,6 @@ class Container:
     # PRIVATE METHODS AND PROPERTIES #
     ##################################
 
-    def _assign_free_static_ip(self):
-        """ Assigns a free static IP to the considered container. """
-        forced_ip, gateway = find_free_ip(self.client)
-        self._guest.set_static_ip_config(forced_ip, gateway)
-        self._container.config['user.nomad.static_ip'] = 'true'
-        self._container.save(wait=True)
-
     def _get_container(self, create=True):
         """ Gets or creates the PyLXD container. """
         try:
@@ -320,13 +308,7 @@ class Container:
         """ Setup the IP address of the considered container. """
         ip = get_ipv4_ip(self._container)
         if not ip:
-            logger.info('No IP yet, waiting 10 seconds...')
-            ip = self._wait_for_ipv4_ip()
-        if not ip:
-            logger.info('Still no IP! Forcing a static IP...')
-            self._container.stop(wait=True)
-            self._assign_free_static_ip()
-            self._container.start(wait=True)
+            logger.info('No IP yet, waiting for at most 10 seconds...')
             ip = self._wait_for_ipv4_ip()
         if not ip:
             logger.warn('STILL no IP! Container is up, but probably broken.')
