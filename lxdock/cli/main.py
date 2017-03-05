@@ -174,7 +174,6 @@ class LXDock:
             raise CLIError('No such command: {}'.format(args.subcommand))
 
     def init(self, args):
-        import codecs
         import os
         from ..conf.constants import ALLOWED_FILENAMES
         from .constants import INIT_LXDOCK_FILE_CONTENT
@@ -193,7 +192,7 @@ class LXDock:
         # Compute the content of the LXDock file to write and write it to a lxdock.yml file.
         init_filecontent = INIT_LXDOCK_FILE_CONTENT.format(
             project_name=project_name, image=args.image or 'ubuntu/xenial')
-        with codecs.open('lxdock.yml', mode='w', encoding='utf-8') as fd:
+        with open('lxdock.yml', mode='w', encoding='utf-8') as fd:
             fd.write(init_filecontent)
 
     def provision(self, args):
