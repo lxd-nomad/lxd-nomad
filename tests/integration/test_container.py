@@ -99,7 +99,7 @@ class TestContainer(LXDTestCase):
     def test_can_set_shell_environment_variables(self, mocked_call):
         # Environment variables in the shell can be set through configuration.
         container_options = {
-            'name': self.containername('dummy'), 'image': 'ubuntu/xenial', 'mode': 'pull',
+            'name': self.containername('shell-env'), 'image': 'ubuntu/xenial',
             'shell': {'environment': {'FOO': 'bar'}},
         }
         container = Container('myproject', THIS_DIR, self.client, **container_options)
