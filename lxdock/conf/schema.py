@@ -1,4 +1,4 @@
-from voluptuous import All, Any, In, IsDir, Length, Required, Schema, Url
+from voluptuous import All, Any, Extra, In, IsDir, Length, Required, Schema, Url
 
 from ..provisioners import Provisioner
 
@@ -21,6 +21,7 @@ _top_level_and_containers_common_options = {
     'shell': {
         'user': str,
         'home': str,
+        'environment': {Extra: str},
     },
     'users': [{
         # Usernames max length is set 32 characters according to useradd's man page.
