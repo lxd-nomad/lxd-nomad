@@ -58,6 +58,14 @@ You should now be able to configure your LXD installation using:
     $ sudo lxd init --auto
     $ lxc network create lxdbr0 ipv6.address=none ipv4.address=10.0.3.1/24 ipv4.nat=true
     $ lxc network attach-profile lxdbr0 default eth0
+ 
+ If you received a permission denied error running the lxc network commands, run these 
+ commands below and then run the lxc network commands again.
+ 
+ .. code-block:: console
+ 
+    $ sudo systemctl stop lxd.socket
+    $ sudo systemctl start lxd.socket
 
 You can now check if your LXD installation is working using:
 
