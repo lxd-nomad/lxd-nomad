@@ -1,5 +1,4 @@
 import logging
-import os
 import subprocess
 import tempfile
 
@@ -44,8 +43,9 @@ class AnsibleProvisioner(Provisioner):
         # Append the --vault-password-file option if applicable.
         vault_password_file = self.options.get('vault_password_file')
         if vault_password_file is not None:
-            cmd_args.extend(['--vault-password-file', vault_password_file])
+            cmd_args.extend([
+                '--vault-password-file', self.homedir_expanded_path(vault_password_file)])
 
         # Append the playbook filepath and return the final command.
-        cmd_args.append(os.path.join(self.homedir, self.options['playbook']))
+        cmd_args.append(self.homedir_expanded_path(self.options['playbook']))
         return ' '.join(cmd_args)

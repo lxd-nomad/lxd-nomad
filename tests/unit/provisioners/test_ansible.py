@@ -52,7 +52,7 @@ class TestAnsibleProvisioner:
         provisioner.provision()
         assert mock_popen.call_args[0] == (
             'ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook --inventory-file '
-            'tmpfile --vault-password-file .vpass ./deploy.yml', )
+            'tmpfile --vault-password-file ./.vpass ./deploy.yml', )
 
     @unittest.mock.patch('subprocess.Popen')
     @unittest.mock.patch('tempfile.NamedTemporaryFile')
