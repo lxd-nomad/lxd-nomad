@@ -106,7 +106,7 @@ class Container:
         shellenv = shellcfg.get('environment')
         if shellenv:
             for key, value in shellenv.items():
-                self._container.config['environment.{}'.format(key)] = value
+                self._container.config['environment.{}'.format(key)] = str(value)
             self._container.save(wait=True)
         if shelluser:
             # This part is the result of quite a bit of `su` args trial-and-error.
