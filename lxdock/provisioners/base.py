@@ -92,6 +92,6 @@ class Provisioner(with_metaclass(_ProvisionerBase)):
     # HELPER METHODS #
     ##################
 
-    def homedir_expanded_path(self, relative_path):
-        """ Expands the considered path with the absolute path of the home homedir. """
-        return os.path.join(self.homedir, relative_path)
+    def homedir_expanded_path(self, path):
+        """ Expands the considered path with the path of the home homedir if applicable. """
+        return os.path.join(self.homedir, path) if not os.path.isabs(path) else path
