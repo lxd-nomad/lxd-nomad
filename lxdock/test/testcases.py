@@ -26,10 +26,6 @@ def _remove_test_containers(client=None):
 class LXDTestCase:
     """ Base test class used to run integration tests that require the use of LXD. """
 
-    @classmethod
-    def teardown_class(cls):
-        _remove_test_containers()
-
     def teardown_method(self, method):
         _remove_test_containers(client=self.client)
 
