@@ -70,4 +70,4 @@ class TestGuest:
         guest.create_user('usertest', password=password)
         assert lxd_container.execute.call_count == 1
         assert lxd_container.execute.call_args[0] == \
-            (['useradd', '-p', password, 'usertest'], )
+            (['useradd', '--create-home', '-p', password, 'usertest'], )
