@@ -1,8 +1,7 @@
 import re
 import unittest.mock
 
-from lxdock.guests import AlpineGuest
-from lxdock.guests import DebianGuest
+from lxdock.guests import AlpineGuest, DebianGuest
 from lxdock.hosts import Host
 from lxdock.provisioners import AnsibleProvisioner
 
