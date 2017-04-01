@@ -137,43 +137,24 @@ class TestContainer(LXDTestCase):
         persistent_container.up()
         assert persistent_container.status == 'running'
 
-    @unittest.mock.patch('subprocess.call')
-    def test_create_basic_user(self, mocked_call):
-        container_options = {
-            'name': self.containername('basicuser'), 'image': 'ubuntu/xenial',
-            'users': [{'name': 'user01'}],
-        }
-        container = Container('myproject', THIS_DIR, self.client, **container_options)
-        container.up()
-        container.shell(username='user01')
-        assert mocked_call.call_count == 1
-        assert mocked_call.call_args[0][0] == \
-            'lxc exec {}  -- su -m user01'.format(container.lxd_name)
-
-    @unittest.mock.patch('subprocess.call')
-    def test_create_user_with_custom_homedir(self, mocked_call):
-        container_options = {
-            'name': self.containername('customuserhome'), 'image': 'ubuntu/xenial',
-            'users': [{'name': 'user02', 'home': '/opt/user02'}],
-        }
-        container = Container('myproject', THIS_DIR, self.client, **container_options)
-        container.up()
-        container.shell(username='user02')
-        assert mocked_call.call_count == 1
-        assert mocked_call.call_args[0][0] == \
-            'lxc exec {}  -- su -m user02'.format(container.lxd_name)
-
-    @unittest.mock.patch('subprocess.call')
-    def test_create_user_with_custom_password(self, mocked_call):
+    def test_create_users(self):
         password = '$6$cGzZBkDjOhGW$6C9wwqQteFEY4lQ6ZJBggE568SLSS7bIMKexwOD' \
                    '39mJQrJcZ5vIKJVIfwsKOZajhbPw0.Zqd0jU2NDLAnp9J/1'
         container_options = {
-            'name': self.containername('customuserpass'), 'image': 'ubuntu/xenial',
-            'users': [{'name': 'user03', 'password': password}],
+            'name': self.containername('createusers'), 'image': 'ubuntu/xenial',
+            'users': [
+                {'name': 'user01'},
+                {'name': 'user02', 'home': '/opt/user02'},
+                {'name': 'user03', 'password': password},
+            ],
         }
         container = Container('myproject', THIS_DIR, self.client, **container_options)
+        guest_mock = unittest.mock.Mock()
+        container._container_guest = guest_mock
         container.up()
-        container.shell(username='user03')
-        assert mocked_call.call_count == 1
-        assert mocked_call.call_args[0][0] == \
-            'lxc exec {}  -- su -m user03'.format(container.lxd_name)
+        assert guest_mock.create_user.call_count == 3
+        assert guest_mock.create_user.call_args_list[0][0][0] == 'user01'
+        assert guest_mock.create_user.call_args_list[1][0][0] == 'user02'
+        assert guest_mock.create_user.call_args_list[2][0][0] == 'user03'
+        assert guest_mock.create_user.call_args_list[1][1]['home'] == '/opt/user02'
+        assert guest_mock.create_user.call_args_list[2][1]['password'] == password
