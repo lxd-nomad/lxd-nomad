@@ -96,10 +96,10 @@ class TestContainer(LXDTestCase):
             'lxc exec {} --env HOME=/opt -- su -m test'.format(container.lxd_name)
 
     def test_can_tell_if_a_container_exists_or_not(self, persistent_container):
-        unkonwn_container = Container('myproject', THIS_DIR, self.client, **{
-            'name': self.containername('unkonwn'), 'image': 'ubuntu/xenial', 'mode': 'pull', })
+        unknown_container = Container('myproject', THIS_DIR, self.client, **{
+            'name': self.containername('unknown'), 'image': 'ubuntu/xenial', 'mode': 'pull', })
         assert persistent_container.exists
-        assert not unkonwn_container.exists
+        assert not unknown_container.exists
 
     def test_can_tell_if_a_container_is_privileged_or_not(self, persistent_container):
         persistent_container._container.config['security.privileged'] = 'true'
@@ -129,10 +129,51 @@ class TestContainer(LXDTestCase):
         assert not persistent_container.is_stopped
 
     def test_can_return_its_status(self, persistent_container):
-        unkonwn_container = Container('myproject', THIS_DIR, self.client, **{
-            'name': self.containername('unkonwn'), 'image': 'ubuntu/xenial', 'mode': 'pull', })
-        assert unkonwn_container.status == 'not-created'
+        unknown_container = Container('myproject', THIS_DIR, self.client, **{
+            'name': self.containername('unknown'), 'image': 'ubuntu/xenial', 'mode': 'pull', })
+        assert unknown_container.status == 'not-created'
         persistent_container.halt()
         assert persistent_container.status == 'stopped'
         persistent_container.up()
         assert persistent_container.status == 'running'
+
+    @unittest.mock.patch('subprocess.call')
+    def test_create_basic_user(self, mocked_call):
+        container_options = {
+            'name': self.containername('basicuser'), 'image': 'ubuntu/xenial',
+            'users': [{'name': 'user01'}],
+        }
+        container = Container('myproject', THIS_DIR, self.client, **container_options)
+        container.up()
+        container.shell(username='user01')
+        assert mocked_call.call_count == 1
+        assert mocked_call.call_args[0][0] == \
+            'lxc exec {}  -- su -m user01'.format(container.lxd_name)
+
+    @unittest.mock.patch('subprocess.call')
+    def test_create_user_with_custom_homedir(self, mocked_call):
+        container_options = {
+            'name': self.containername('customuserhome'), 'image': 'ubuntu/xenial',
+            'users': [{'name': 'user02', 'home': '/opt/user02'}],
+        }
+        container = Container('myproject', THIS_DIR, self.client, **container_options)
+        container.up()
+        container.shell(username='user02')
+        assert mocked_call.call_count == 1
+        assert mocked_call.call_args[0][0] == \
+            'lxc exec {}  -- su -m user02'.format(container.lxd_name)
+
+    @unittest.mock.patch('subprocess.call')
+    def test_create_user_with_custom_password(self, mocked_call):
+        password = '$6$cGzZBkDjOhGW$6C9wwqQteFEY4lQ6ZJBggE568SLSS7bIMKexwOD' \
+                   '39mJQrJcZ5vIKJVIfwsKOZajhbPw0.Zqd0jU2NDLAnp9J/1'
+        container_options = {
+            'name': self.containername('customuserpass'), 'image': 'ubuntu/xenial',
+            'users': [{'name': 'user03', 'password': password}],
+        }
+        container = Container('myproject', THIS_DIR, self.client, **container_options)
+        container.up()
+        container.shell(username='user03')
+        assert mocked_call.call_count == 1
+        assert mocked_call.call_args[0][0] == \
+            'lxc exec {}  -- su -m user03'.format(container.lxd_name)
