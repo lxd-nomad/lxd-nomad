@@ -19,6 +19,15 @@ Just append a ``shell`` provisioning operation to your LXDock file as follows:
     - type: shell
       inline: echo "Hello, World!"
 
+.. note::
+
+  Keep in mind that the shell provisioner will use the LXD's ``exec`` method in order to run your
+  commands on containers (the same method used by the ``lxc exec`` command). This means that common
+  shell patterns (like file redirects, ``|``, ``>``, ``<``, ...) won't work because the ``exec``
+  method doesn't use a shell (so the kernel will not be able to understand these shell patterns).
+  The only way to overcome this is to put things like ``sh -c 'ls -l > /tmp/test'`` in your
+  ``inline`` options.
+
 Required options
 ----------------
 
