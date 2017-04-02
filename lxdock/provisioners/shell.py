@@ -1,6 +1,6 @@
 import os
 
-from voluptuous import Any, IsFile, Required
+from voluptuous import Any, Exclusive, IsFile
 
 from .base import Provisioner
 
@@ -10,29 +10,29 @@ class ShellProvisioner(Provisioner):
 
     name = 'shell'
     schema = {
-        Required('steps'): [Any({Required('script'): IsFile()}, {Required('inline'): str}), ],
+        Exclusive('inline', 'shelltype'): str,
+        Exclusive('script', 'shelltype'): IsFile(),
         'side': Any('guest', 'host'),
     }
 
     def provision(self):
         """ Executes the shell commands in the guest container or in the host. """
-        for step in self.options['steps']:
-            if 'script' in step and self._is_for_guest:
-                # First case: we have to run the script inside the container. So the first step is
-                # to copy the content of the script to a temporary file in the container, ensure
-                # that the script is executable and then run the script.
-                guest_scriptpath = os.path.join('/tmp/', os.path.basename(step['script']))
-                with open(self.homedir_expanded_path(step['script'])) as fd:
-                    self.guest.lxd_container.files.put(guest_scriptpath, fd.read())
-                self.guest.run(['chmod', '+x', guest_scriptpath])
-                self.guest.run([guest_scriptpath, ])
-            elif 'script' in step and self._is_for_host:
-                # Second case: the script is executed on the host side.
-                self.host.run([self.homedir_expanded_path(step['script']), ])
-            elif 'inline' in step:
-                # Final case: we run a command directly inside the container or outside.
-                host_or_guest = getattr(self, self._side)
-                host_or_guest.run(step['inline'].split())
+        if 'script' in self.options and self._is_for_guest:
+            # First case: we have to run the script inside the container. So the first step is
+            # to copy the content of the script to a temporary file in the container, ensure
+            # that the script is executable and then run the script.
+            guest_scriptpath = os.path.join('/tmp/', os.path.basename(self.options['script']))
+            with open(self.homedir_expanded_path(self.options['script'])) as fd:
+                self.guest.lxd_container.files.put(guest_scriptpath, fd.read())
+            self.guest.run(['chmod', '+x', guest_scriptpath])
+            self.guest.run([guest_scriptpath, ])
+        elif 'script' in self.options and self._is_for_host:
+            # Second case: the script is executed on the host side.
+            self.host.run([self.homedir_expanded_path(self.options['script']), ])
+        elif 'inline' in self.options:
+            # Final case: we run a command directly inside the container or outside.
+            host_or_guest = getattr(self, self._side)
+            host_or_guest.run(self.options['inline'].split())
 
     ##################################
     # PRIVATE METHODS AND PROPERTIES #

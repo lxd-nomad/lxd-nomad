@@ -17,29 +17,38 @@ Just append a ``shell`` provisioning operation to your LXDock file as follows:
 
   provisioning:
     - type: shell
-      steps:
-        - inline: echo "Hello, World!"
+      inline: echo "Hello, World!"
 
 Required options
 ----------------
 
-steps
-=====
+inline
+======
 
-The ``steps`` option allows you to define each step to execute when it comes to provision the
-considered containers. This option must contain a list of steps corresponding to ``inline`` commands
-or corresponding to existing ``scripts``:
+The ``inline`` option allows you to specify a shell command that should be executed on the guest
+side or on the host. Note that the ``inline`` option and the ``script`` option are mutually
+exclusive.
 
 .. code-block:: yaml
 
-  name: myproject
-  image: ubuntu/xenial
-
+  [...]
   provisioning:
     - type: shell
-      steps:
-        - inline: echo "Hello, World!"
-        - script: path/to/my/script.sh
+      inline: echo "Hello, World!"
+
+script
+======
+
+The ``script`` option lets you define the path to an existing script that should be executed on the
+guest side or on the host. Note that the ``script`` option and the ``inline`` option are mutually
+exclusive.
+
+.. code-block:: yaml
+
+  [...]
+  provisioning:
+    - type: shell
+      script: path/to/my/script.sh
 
 Optional options
 ----------------
@@ -56,5 +65,4 @@ the host side. The default value for this option is ``guest``. Here is an exampl
   provisioning:
     - type: shell
       side: host
-      steps:
-        - inline: echo "Hello, World!"
+      inline: echo "Hello, World!"

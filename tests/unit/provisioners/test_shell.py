@@ -11,7 +11,7 @@ class TestShellProvisioner:
         host = Host(unittest.mock.Mock())
         guest = DebianGuest(unittest.mock.Mock())
         provisioner = ShellProvisioner(
-            './', host, guest, {'steps': [{'inline': 'touch f'}, ], 'side': 'host', })
+            './', host, guest, {'inline': 'touch f', 'side': 'host', })
         provisioner.provision()
         assert mock_popen.call_args[0] == ('touch f', )
 
@@ -21,7 +21,7 @@ class TestShellProvisioner:
         host = Host(unittest.mock.Mock())
         guest = DebianGuest(lxd_container)
         provisioner = ShellProvisioner(
-            './', host, guest, {'steps': [{'inline': 'echo TEST'}, ], })
+            './', host, guest, {'inline': 'echo TEST'})
         provisioner.provision()
         assert lxd_container.execute.call_count == 1
         assert lxd_container.execute.call_args_list[0][0] == (['echo', 'TEST'], )
@@ -31,7 +31,7 @@ class TestShellProvisioner:
         host = Host(unittest.mock.Mock())
         guest = DebianGuest(unittest.mock.Mock())
         provisioner = ShellProvisioner(
-            './', host, guest, {'steps': [{'script': 'test.sh'}, ], 'side': 'host', })
+            './', host, guest, {'script': 'test.sh', 'side': 'host', })
         provisioner.provision()
         assert mock_popen.call_args[0] == ('./test.sh', )
 
@@ -42,7 +42,7 @@ class TestShellProvisioner:
         host = Host(unittest.mock.Mock())
         guest = DebianGuest(lxd_container)
         provisioner = ShellProvisioner(
-            './', host, guest, {'steps': [{'script': 'test.sh'}, ], })
+            './', host, guest, {'script': 'test.sh', })
         provisioner.provision()
         assert lxd_container.execute.call_count == 2
         assert lxd_container.execute.call_args_list[0][0] == (['chmod', '+x', '/tmp/test.sh', ], )
