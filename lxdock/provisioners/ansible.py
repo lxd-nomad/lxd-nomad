@@ -18,12 +18,12 @@ class AnsibleProvisioner(Provisioner):
     guest_required_packages_alpine = ['openssh', 'python', ]
     guest_required_packages_archlinux = ['openssh', 'python2', ]
     guest_required_packages_centos = ['openssh-server', 'python', ]
-    guest_required_packages_debian = ['openssh-server', 'python', ]
+    guest_required_packages_debian = ['apt-utils', 'aptitude', 'openssh-server', 'python', ]
     guest_required_packages_fedora = ['openssh-server', 'python2', ]
     guest_required_packages_gentoo = ['net-misc/openssh', 'dev-lang/python', ]
     guest_required_packages_opensuse = ['openSSH', 'python3-base', ]
     guest_required_packages_oracle = ['openssh-server', 'python', ]
-    guest_required_packages_ubuntu = ['openssh-server', 'python', ]
+    guest_required_packages_ubuntu = ['apt-utils', 'aptitude', 'openssh-server', 'python', ]
 
     schema = {
         Required('playbook'): IsFile(),
