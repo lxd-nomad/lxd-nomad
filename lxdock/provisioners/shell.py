@@ -1,4 +1,5 @@
 import os
+import shlex
 
 from voluptuous import Any, Exclusive, IsFile
 
@@ -32,7 +33,7 @@ class ShellProvisioner(Provisioner):
         elif 'inline' in self.options:
             # Final case: we run a command directly inside the container or outside.
             host_or_guest = getattr(self, self._side)
-            host_or_guest.run(self.options['inline'].split())
+            host_or_guest.run(shlex.split(self.options['inline']))
 
     ##################################
     # PRIVATE METHODS AND PROPERTIES #
