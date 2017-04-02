@@ -77,6 +77,9 @@ class Container:
     @must_be_running
     def provision(self, barebone=None):
         """ Provisions the container. """
+        # We run this in case our lxdock.yml config was modified since our last `lxdock up`.
+        self._setup_env()
+
         if barebone is None:  # None == only if the container isn't provisioned.
             barebone = not self.is_provisioned
 
@@ -103,15 +106,13 @@ class Container:
     @must_be_running
     def shell(self, username=None):
         """ Opens a new interactive shell in the container. """
+        # We run this in case our lxdock.yml config was modified since our last `lxdock up`.
+        self._setup_env()
+
         # For now, it's much easier to call `lxc`, but eventually, we might want to contribute
         # to pylxd so it supports `interactive = True` in `exec()`.
         shellcfg = self.options.get('shell', {})
         shelluser = username or shellcfg.get('user')
-        shellenv = shellcfg.get('environment')
-        if shellenv:
-            for key, value in shellenv.items():
-                self._container.config['environment.{}'.format(key)] = str(value)
-            self._container.save(wait=True)
         if shelluser:
             # This part is the result of quite a bit of `su` args trial-and-error.
             shellhome = shellcfg.get('home') if not username else None
@@ -148,6 +149,9 @@ class Container:
 
         # Setup shares if applicable.
         self._setup_shares()
+
+        # Override environment variables
+        self._setup_env()
 
         # Provisions the container if applicable.
         if not self.is_provisioned:
@@ -294,6 +298,14 @@ class Container:
             self._guest.add_ssh_pubkey_to_root_authorized_keys(ssh_pubkey)
         else:
             logger.warning('SSH pubkey was not found. Provisioning tools may not work correctly...')
+
+    def _setup_env(self):
+        """ Add environment overrides from the conf to our container config. """
+        env_override = self.options.get('environment')
+        if env_override:
+            for key, value in env_override.items():
+                self._container.config['environment.{}'.format(key)] = str(value)
+            self._container.save(wait=True)
 
     def _setup_hostnames(self, ip):
         """ Configure the potential hostnames associated with the container. """

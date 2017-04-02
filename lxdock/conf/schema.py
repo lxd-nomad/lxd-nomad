@@ -6,6 +6,7 @@ from .validators import Hostname, LXDIdentifier
 
 
 _top_level_and_containers_common_options = {
+    'environment': {Extra: Coerce(str)},
     'hostnames': [Hostname(), ],
     'image': str,
     'mode': In(['local', 'pull', ]),
@@ -21,7 +22,6 @@ _top_level_and_containers_common_options = {
     'shell': {
         'user': str,
         'home': str,
-        'environment': {Extra: Coerce(str)},
     },
     'users': [{
         # Usernames max length is set 32 characters according to useradd's man page.

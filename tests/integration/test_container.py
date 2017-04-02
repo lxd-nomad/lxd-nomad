@@ -100,7 +100,7 @@ class TestContainer(LXDTestCase):
         # Environment variables in the shell can be set through configuration.
         container_options = {
             'name': self.containername('shell-env'), 'image': 'ubuntu/xenial',
-            'shell': {'environment': {'FOO': 'bar', 'BAR': 42}},
+            'environment': {'FOO': 'bar', 'BAR': 42},
         }
         container = Container('myproject', THIS_DIR, self.client, **container_options)
         container.up()

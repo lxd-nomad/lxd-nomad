@@ -47,6 +47,20 @@ containers, as follows:
     - name: test01
     - name: test02
 
+environment
+-----------
+
+A mapping of environment variables to override in the container when executing commands. This will
+affect ``lxdock shell`` and ``lxdock provision`` operations.
+
+.. code-block:: yaml
+
+  name: myproject
+  image: ubuntu/xenial
+
+  environment:
+    LC_ALL: en_US.utf8
+
 hostnames
 ---------
 
@@ -216,7 +230,6 @@ sub-options:
 
 * ``user``: Default user to open the shell under.
 * ``home``: Path to open the shell under.
-* ``environment``: A mapping of environment variables to set in the shell.
 
 .. code-block:: yaml
 
@@ -226,8 +239,6 @@ sub-options:
   shell:
     user: myuser
     home: /opt/myproject
-    environment:
-      LC_ALL: en_US.utf8
 
 users
 -----
