@@ -92,7 +92,9 @@ class Host(with_metaclass(_HostBase)):
 
     def give_current_user_access_to_share(self, source):
         """ Give read/write access to `source` for the current user. """
-        self.run(['setfacl', '-Rdm',  'u:{}:rwX'.format(os.getuid()), source])
+        success = self.run(['setfacl', '-Rdm',  'u:{}:rwX'.format(os.getuid()), source])
+        if not success:
+            raise AssertionError("The user 'lxd' does not exists on the host machine.")
 
     def give_mapped_user_access_to_share(self, source, userpath=None):
         """ Give read/write access to `source` for the mapped user owning `userpath`.
@@ -112,11 +114,13 @@ class Host(with_metaclass(_HostBase)):
         container_path = os.path.join(*container_path_parts)
         container_path_stats = os.stat(container_path)
         host_userpath_uid = container_path_stats.st_uid
-        self.run([
+        success = self.run([
             'setfacl', '-Rm',
             'user:lxd:rwx,default:user:lxd:rwx,'
             'user:{0}:rwx,default:user:{0}:rwx'.format(host_userpath_uid), source,
         ])
+        if not success:
+            raise AssertionError("The user 'lxd' does not exists on the host machine.")
 
     ##################
     # HELPER METHODS #
@@ -126,4 +130,7 @@ class Host(with_metaclass(_HostBase)):
         """ Runs the specified command on the host. """
         cmd = ' '.join(cmd_args)
         logger.debug('Running {0} on the host'.format(cmd))
-        subprocess.Popen(cmd, shell=True).wait()
+        ps = subprocess.Popen(cmd, shell=True)
+        ps.wait()
+        out, err = ps.communicate()
+        return err == ''
