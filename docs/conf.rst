@@ -286,7 +286,7 @@ for more information:
     - name: test02
       home: /opt/test02
     - name: test03
-      password: $6$cGzZBkDjOhGW$6C9wwqQteFEY4lQ6ZJBggE568SLSS7bIMKexwOD39mJQrJcZ5vIKJVIfwsKOZajhbPw0.Zqd0jU2NDLAnp9J/1
+      password: $$6$$cGzZBkDjOhGW$$6C9wwqQteFEY4lQ6ZJBggE568SLSS7bIMKexwOD39mJQrJcZ5vIKJVIfwsKOZajhbPw0.Zqd0jU2NDLAnp9J/1
 
 Variable substitution
 #####################
