@@ -1,6 +1,7 @@
 import os
-import pytest
 from test.support import EnvironmentVarGuard
+
+import pytest
 
 from lxdock.conf.config import Config
 from lxdock.conf.exceptions import (ConfigFileInterpolationError, ConfigFileNotFoundError,
