@@ -1,4 +1,3 @@
-from functools import reduce
 from string import Template
 
 
@@ -21,5 +20,4 @@ def interpolate_variables(config_dict, mapping):
             return [interpolate(v) for v in value]
         return value
 
-    return dict(reduce(
-        lambda items, b: items + [(b[0], interpolate(b[1])), ], config_dict.items(), []))
+    return {k: interpolate(v) for k, v in config_dict.items()}

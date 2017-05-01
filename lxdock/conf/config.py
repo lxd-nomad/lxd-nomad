@@ -100,7 +100,7 @@ class Config(object):
         # Fetches variables that could be defined in a .env file and inserts them in the mapping.
         env_filepath = os.path.join(self.homedir, '.env')
         if os.path.exists(env_filepath):
-            mapping.update({k: v for k, v in self._get_dotenv_items(env_filepath)})
+            mapping.update(dict(self._get_dotenv_items(env_filepath)))
 
         # Inserts LXDock special variables into the final mapping.
         mapping.update({
