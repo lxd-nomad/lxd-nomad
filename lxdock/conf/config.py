@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import yaml
+from dotenv.main import dotenv_values
 from voluptuous.error import Invalid
 
 from . import constants
@@ -100,7 +101,7 @@ class Config(object):
         # Fetches variables that could be defined in a .env file and inserts them in the mapping.
         env_filepath = os.path.join(self.homedir, '.env')
         if os.path.exists(env_filepath):
-            mapping.update(dict(self._get_dotenv_items(env_filepath)))
+            mapping.update(dotenv_values(env_filepath))
 
         # Inserts LXDock special variables into the final mapping.
         mapping.update({
@@ -160,27 +161,6 @@ class Config(object):
         container_config.update(container_dict)
         del container_config['containers']
         return container_config
-
-    def _get_dotenv_items(self, env_filepath):
-        """ Yields <key, value> pairs defined in a .env file. """
-        for line in open(env_filepath, mode='r'):
-            line = line.strip()
-            # Ignores lines starting with #.
-            if line.startswith('#'):
-                continue
-
-            # Fetches the key and the corresponding value.
-            try:
-                key, val = line.split('=', 1)
-            except ValueError:
-                continue
-
-            key = key.strip()
-            val = val.strip()
-            if not (key and val):
-                continue
-
-            yield key, val
 
     def _load_yml(self):
         """ Loads the YML configuration file. """
