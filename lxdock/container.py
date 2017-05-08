@@ -366,8 +366,11 @@ class Container:
         for i, share in enumerate(self.options.get('shares', []), start=1):
             source = os.path.join(self.homedir, share['source'])
             if source not in existing_sources:
-                logger.info('Setting host-side ACL for {}'.format(source))
-                self._host.give_current_user_access_to_share(source)
+                # Only need to give current user read/write access to share
+                # if they don't have write access already.
+                if not os.access(source, os.W_OK):
+                    logger.info('Setting host-side ACL for {}'.format(source))
+                    self._host.give_current_user_access_to_share(source)
                 if not self.is_privileged:
                     # We are considering a safe container. So give the mapped root user permissions
                     # to read/write contents in the shared folders too.
