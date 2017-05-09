@@ -39,6 +39,7 @@ setup(
         'python-dotenv>=0.6',
         'PyYAML>=3.0,<4.0',
         'voluptuous>=0.9,<1.0',
+        'requests!=2.8.0,>=2.5.2',
     ],
     tests_require=[
         'pytest',
