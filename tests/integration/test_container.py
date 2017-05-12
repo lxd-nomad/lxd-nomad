@@ -2,10 +2,12 @@ import os
 import types
 import unittest.mock
 
+import pytest
 from pylxd.exceptions import NotFound
 
 from lxdock import constants
 from lxdock.container import Container, must_be_created_and_running
+from lxdock.exceptions import ContainerOperationFailed
 from lxdock.test.testcases import LXDTestCase
 
 
@@ -118,6 +120,34 @@ class TestContainer(LXDTestCase):
         assert mocked_call.call_count == 1
         assert mocked_call.call_args[0][0] == \
             'lxc exec {} --env HOME=/opt -- su -m test'.format(container.lxd_name)
+
+    @unittest.mock.patch('subprocess.call')
+    def test_can_run_quoted_shell_command_for_the_root_user(
+            self, mocked_call, persistent_container):
+        persistent_container.shell(cmd_args=['echo', 'he re"s', '-u', '$PATH'])
+        assert mocked_call.call_count == 1
+        assert mocked_call.call_args[0][0] == \
+            'lxc exec {} -- su -m root -s {}'.format(
+                persistent_container.lxd_name, persistent_container._guest_shell_script_file)
+        script = persistent_container._container.files.get(
+            persistent_container._guest_shell_script_file)
+        assert script == b"""#!/bin/sh\necho 'he re"s' -u '$PATH'\n"""
+
+    @unittest.mock.patch('subprocess.call')
+    def test_can_run_quoted_shell_command_for_a_specific_shelluser(self, mocked_call):
+        container_options = {
+            'name': self.containername('shellspecificuser'), 'image': 'ubuntu/xenial',
+            'shell': {'user': 'test', 'home': '/opt', },
+        }
+        container = Container('myproject', THIS_DIR, self.client, **container_options)
+        container.up()
+        container.shell(cmd_args=['echo', 'he re"s', '-u', '$PATH'])
+        assert mocked_call.call_count == 1
+        assert mocked_call.call_args[0][0] == \
+            'lxc exec {} --env HOME=/opt -- su -m test -s {}'.format(
+                container.lxd_name, container._guest_shell_script_file)
+        script = container._container.files.get(container._guest_shell_script_file)
+        assert script == b"""#!/bin/sh\necho 'he re"s' -u '$PATH'\n"""
 
     @unittest.mock.patch('subprocess.call')
     def test_can_set_shell_environment_variables(self, mocked_call):
@@ -239,3 +269,20 @@ class TestContainer(LXDTestCase):
         assert container._get_container() is cont_return
         assert client_mock.containers.get.called
         assert client_mock.containers.create.called
+
+    def test_can_set_profiles(self):
+        container_options = {
+            'name': self.containername('newcontainer'), 'image': 'ubuntu/xenial', 'mode': 'pull',
+            'profiles': ['default']}
+        container = Container('myproject', THIS_DIR, self.client, **container_options)
+        container.up()
+        assert container._container.status_code == constants.CONTAINER_RUNNING
+        assert container._container.profiles == ['default']
+
+    def test_raises_an_error_if_profile_does_not_exist(self):
+        container_options = {
+            'name': self.containername('newcontainer'), 'image': 'ubuntu/xenial', 'mode': 'pull',
+            'profiles': ['default', '39mJQrJcZ5vIKJVIfwsKOZajhbPw0']}
+        container = Container('myproject', THIS_DIR, self.client, **container_options)
+        with pytest.raises(ContainerOperationFailed):
+            container.up()
