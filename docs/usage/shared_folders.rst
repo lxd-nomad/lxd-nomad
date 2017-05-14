@@ -66,7 +66,7 @@ By default ACLs will be turned on for all shares, however it is also possible to
 functionality on a per-share basis.  One reason you might want to do this, is when you are
 using privileged containers and ensuring the container user matches the uid and gid
 of the host system.  This allows a share to be mapped without the use of ACLs, however the
-user should be aware of the security implications for making shares world-writable. This
+user should be aware of the security implications of making shares world-writable. This
 may be acceptable for development only containers for example.
 
 .. code-block:: yaml
