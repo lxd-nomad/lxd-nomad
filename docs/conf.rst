@@ -269,8 +269,8 @@ of shared items. Each shared item should define a ``source`` (a path on your hos
 
 .. note::
 
-The ``set_host_acl`` parameter is optional and defaults to true when left out,
-please refer to :doc:`usage/shared_folders` for more information.
+  The ``set_host_acl`` parameter is optional and defaults to true when left out,
+  please refer to :doc:`usage/shared_folders` for more information.
 
 shell
 -----
