@@ -85,4 +85,4 @@ may be acceptable for development only containers for example.
 
 In this example, the Ansible provisioner can be used to change the uid and gid of
 the test01 user after it has been created by LXDock. How to implement this is
-up to the you, as LXDock does not provide a uid and gid option when creating users.
+up to the user, as LXDock does not provide a uid and gid option when creating users.
