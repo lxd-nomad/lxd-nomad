@@ -22,6 +22,20 @@ class TestAnsibleProvisioner:
             './deploy.yml', mock_popen.call_args[0][0])
 
     @unittest.mock.patch('subprocess.Popen')
+    def test_can_run_ansible_playbooks_with_the_inventory_option(self, mock_popen):
+        host = Host(unittest.mock.Mock())
+        guest = DebianGuest(unittest.mock.Mock())
+        lxd_state = unittest.mock.Mock()
+        lxd_state.network.__getitem__ = unittest.mock.MagicMock(
+            return_value={'addresses': [{'family': 'init', 'address': '0.0.0.0', }, ]})
+        guest.lxd_container.state.return_value = lxd_state
+        provisioner = AnsibleProvisioner(
+            './', host, guest, {'playbook': 'deploy.yml', 'inventory': 'path/to/inventory'})
+        provisioner.provision()
+        assert 'ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook ' \
+            '--inventory-file path/to/inventory ./deploy.yml' == mock_popen.call_args[0][0]
+
+    @unittest.mock.patch('subprocess.Popen')
     def test_can_run_ansible_playbooks_with_the_vault_password_file_option(self, mock_popen):
         host = Host(unittest.mock.Mock())
         guest = DebianGuest(unittest.mock.Mock())

@@ -37,6 +37,19 @@ your containers are provisioned.
 Optional options
 ----------------
 
+inventory
+=========
+
+You can use this option to force the inventory file path. Here is an example:
+
+.. code-block:: yaml
+
+  [...]
+  provisioning:
+    - type: ansible
+      playbook: deploy/site.yml
+      inventory: inventories/dev
+
 ask_vault_pass
 ==============
 
