@@ -27,12 +27,18 @@ class AnsibleProvisioner(Provisioner):
 
     schema = {
         Required('playbook'): IsFile(),
+        'inventory': str,
         'ask_vault_pass': bool,
         'vault_password_file': IsFile(),
     }
 
     def provision(self):
         """ Performs the provisioning operations using ansible-playbook. """
+        inventory = self.options.get('inventory')
+        if inventory is not None:
+            self.host.run(self._build_ansible_playbook_command_args(inventory))
+            return
+
         ip = get_ip(self.guest.lxd_container)
         with tempfile.NamedTemporaryFile() as tmpinv:
             tmpinv.write('{} ansible_user=root'.format(ip).encode('ascii'))
