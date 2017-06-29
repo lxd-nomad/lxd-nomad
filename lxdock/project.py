@@ -64,12 +64,12 @@ class Project:
             container.provision(force=force)
 
         host = Host.get()
-        guests = [Guest.get(c) for c in containers]
         if not force:
-            guests = [g for g in guests if not g.is_provisioned()]
-        if not guests:
+            containers = [c for c in containers if not c.is_provisioned]
+        if not containers:
             return
 
+        guests = [Guest.get(c) for c in containers]
         for provisioning_item in self.provisioning_steps:
             provisioning_type = provisioning_item['type'].lower()
             provisioner_class = Provisioner.provisioners.get(provisioning_type)

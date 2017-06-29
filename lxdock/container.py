@@ -95,7 +95,7 @@ class Container:
         except KeyError:
             return
 
-        if not force and self._guest.is_provisioned():
+        if not force and self.is_provisioned:
             return
 
         for provisioning_item in provisioning_steps:
@@ -194,6 +194,11 @@ class Container:
     def is_privileged(self):
         """ Returns a boolean indicating if the container is privileged. """
         return self._container.config.get('security.privileged') == 'true'
+
+    @property
+    def is_provisioned(self):
+        """ Returns a boolean indicating if the container is provisioned. """
+        return self._container.config.get('user.lxdock.provisioned') == 'true'
 
     @property
     def is_running(self):

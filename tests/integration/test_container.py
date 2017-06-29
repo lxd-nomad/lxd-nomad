@@ -176,6 +176,14 @@ class TestContainer(LXDTestCase):
         persistent_container._container.save(wait=True)
         assert not persistent_container.is_privileged
 
+    def test_can_tell_if_a_container_is_provisioned_or_not(self, persistent_container):
+        persistent_container._container.config['user.lxdock.provisioned'] = 'false'
+        persistent_container._container.save(wait=True)
+        assert not persistent_container.is_provisioned
+        persistent_container._container.config['user.lxdock.provisioned'] = 'true'
+        persistent_container._container.save(wait=True)
+        assert persistent_container.is_provisioned
+
     def test_can_tell_if_a_container_is_running_or_not(self, persistent_container):
         persistent_container.halt()
         assert not persistent_container.is_running

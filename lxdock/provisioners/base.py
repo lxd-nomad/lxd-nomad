@@ -111,7 +111,7 @@ class Provisioner(with_metaclass(_ProvisionerBase)):
 
     def setup(self):
         for guest in self.guests:
-            if not guest.is_provisioned():
+            if not guest.container.is_provisioned:
                 self.setup_single(guest)
 
     def setup_single(self, guest):

@@ -182,10 +182,6 @@ class Guest(with_metaclass(_GuestBase)):
         self.run(['tar', '-xf', guest_tar_path, '-C', str(guest_path)])
         self.run(['rm', '-f', str(guest_tar_path)])
 
-    def is_provisioned(self):
-        """ Returns a boolean indicating if the container is provisioned. """
-        return self.lxd_container.config.get('user.lxdock.provisioned') == 'true'
-
     ##################################
     # PRIVATE METHODS AND PROPERTIES #
     ##################################

@@ -96,7 +96,7 @@ class TestProject(LXDTestCase):
             provisioning_steps=provisioning_steps)
         project.up()  # implicit provisioning
         for container in project.containers:
-            assert container._guest.is_provisioned
+            assert container.is_provisioned
 
     def test_can_provision_some_specific_containers_of_a_project(self):
         homedir = os.path.join(FIXTURE_ROOT, 'project03')
@@ -114,7 +114,7 @@ class TestProject(LXDTestCase):
         project.up(provisioning_mode=constants.ProvisioningMode.DISABLED)
         project.provision(container_names=['lxdock-pytest-thisisatest'])
         container_web = project.get_container_by_name('lxdock-pytest-thisisatest')
-        assert container_web._guest.is_provisioned
+        assert container_web.is_provisioned
 
     def test_can_destroy_all_the_containers_of_a_project(self):
         homedir = os.path.join(FIXTURE_ROOT, 'project03')
