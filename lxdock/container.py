@@ -119,7 +119,9 @@ class Container:
         shelluser = username or shellcfg.get('user')
         if shelluser:
             # This part is the result of quite a bit of `su` args trial-and-error.
-            shellhome = shellcfg.get('home') if not username else None
+            shellhome = shellcfg.get('home')
+            if not shellhome and shelluser != 'root':
+                shellhome = os.path.join(os.sep, 'home', shelluser)
             homearg = '--env HOME={}'.format(shellhome) if shellhome else ''
             cmd = 'lxc exec {} {} -- su -m {}'.format(self.lxd_name, homearg, shelluser)
         else:
