@@ -1,7 +1,7 @@
 import os
-from pkg_resources import parse_version as ver
 
 import pylxd
+from pkg_resources import parse_version as ver
 
 
 def get_client():
@@ -12,6 +12,6 @@ def get_client():
     insufficient_version = ver(pylxd.__version__) < ver("2.2.5")
 
     if lxd_dir_not_set and snap_socket_exists and insufficient_version:
-      os.environ["LXD_DIR"] = "/var/snap/lxd/common/lxd"
+        os.environ["LXD_DIR"] = "/var/snap/lxd/common/lxd"
 
     return pylxd.Client()
