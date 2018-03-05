@@ -1,8 +1,7 @@
 sudo: required
 dist: xenial
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y lxd
+  - snap install lxd
   - sudo lxd init --auto
   - sudo lxc network create lxdbr0 ipv6.address=none ipv4.address=10.0.3.1/24 ipv4.nat=true
   - sudo lxc network attach-profile lxdbr0 default eth0
