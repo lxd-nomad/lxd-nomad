@@ -18,3 +18,5 @@ sudo lxc network attach-profile lxdbr0 default eth0
 
 sudo chmod 777 /var/snap/lxd/common/lxd/unix.socket
 ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa -P ""
+
+pip install --upgrade pip setuptools
