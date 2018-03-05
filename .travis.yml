@@ -1,7 +1,7 @@
 sudo: required
 dist: xenial
 env:
-  - PATH=/snap/bin;/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  - PATH=/snap/bin:$PATH
 
 before_install:
   - sudo snap install lxd
