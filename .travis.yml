@@ -2,6 +2,7 @@ sudo: required
 dist: xenial
 before_install:
   - sudo snap install lxd
+  - lxc version
   - sudo lxd init --auto
   - sudo lxc network create lxdbr0 ipv6.address=none ipv4.address=10.0.3.1/24 ipv4.nat=true
   - sudo lxc network attach-profile lxdbr0 default eth0
@@ -22,7 +23,6 @@ matrix:
 
 # We set HOME because lxc needs somewhere writable to not crash during testing.
 script:
-  - lxc version
   - cp -R /home/travis/.ssh $TRAVIS_BUILD_DIR
   - HOME=$TRAVIS_BUILD_DIR make travis
 
