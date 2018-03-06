@@ -37,7 +37,7 @@ travis-sysdeps:
 	sudo ls -l /var/snap/lxd/common
 	sudo ls -l /var/snap/lxd/common/lxd
 	while [ ! -S /var/snap/lxd/common/lxd/unix.socket ]; do \
-		sleep 0.5 \
+		sleep 0.5; \
 	done
 	sudo usermod -a -G lxd travis
 	sudo lxd --version
