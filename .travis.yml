@@ -1,18 +1,10 @@
 sudo: required
-dist: xenial
+dist: trusty
 env:
   - PATH=/snap/bin:$PATH
 
 before_install:
-  - sudo apt-get remove lxd
-  - sudo apt-get install snapd
-  - sudo snap install lxd
-  - sudo snap start lxd
-  - sudo lxd init --auto --storage-backend dir
-  - sudo lxc network create lxdbr0 ipv6.address=none ipv4.address=10.0.3.1/24 ipv4.nat=true
-  - sudo lxc network attach-profile lxdbr0 default eth0
-  - sudo ls -l /var/snap/lxd/common/lxd
-  - sudo chmod 777 /var/snap/lxd/common/lxd/unix.socket
+  - make travis-sysdeps
   - ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa -P ""
 
 language: python
