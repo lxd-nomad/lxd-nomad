@@ -32,6 +32,7 @@ travis-sysdeps:
 	sudo snap list
 	sudo snap start lxd
 	sudo sh -c 'echo PATH=/snap/bin:$$PATH >> /etc/environment'
+	sleep 1
 	sudo ls -l /var/snap/lxd
 	sudo ls -l /var/snap/lxd/common
 	sudo ls -l /var/snap/lxd/common/lxd
