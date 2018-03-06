@@ -32,6 +32,9 @@ travis-sysdeps:
 	sudo snap list
 	sudo snap start lxd
 	sudo sh -c 'echo PATH=/snap/bin:$$PATH >> /etc/environment'
+	sudo ls -l /var/snap/lxd
+	sudo ls -l /var/snap/lxd/common
+	sudo ls -l /var/snap/lxd/common/lxd
 	while [ ! -S /var/snap/lxd/common/lxd/unix.socket ]; do \
 		sleep 0.5 \
 	done
