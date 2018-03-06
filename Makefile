@@ -1,3 +1,5 @@
+SHELL:=/bin/bash
+
 .PHONY: install upgrade lint coverage travis docs
 
 install:
