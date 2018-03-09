@@ -33,6 +33,7 @@ travis-sysdeps:
 	while [ ! -S /var/snap/lxd/common/lxd/unix.socket ]; do \
 		sleep 0.5; \
 	done
+	sudo addgroup lxd || true
 	sudo usermod -a -G lxd travis
 	sudo lxd --version
 	sudo lxd init --auto
