@@ -39,6 +39,7 @@ travis-sysdeps:
 		sleep 0.5; \
 	done
 	sudo usermod -a -G lxd travis
+	newgrp lxd
 	sudo lxd --version
 	sudo lxd init --auto
 	sudo lxc network create lxdbr0 ipv6.address=none ipv4.address=10.0.3.1/24 ipv4.nat=true
