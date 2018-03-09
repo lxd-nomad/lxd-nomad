@@ -18,7 +18,7 @@ isort:
 
 coverage:
 	# py.test --cov-report term-missing --cov lxdock
-	lxc launch ubuntu:16.04 xenial
+	/snap/bin/lxc launch ubuntu:16.04 xenial
 
 spec:
 	py.test --spec -p no:sugar
