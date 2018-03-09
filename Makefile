@@ -26,6 +26,7 @@ travis-sysdeps:
 	sudo apt-get update -q
 	sudo apt-get remove -qy lxd lxd-client
 	sudo apt-get -y install snapd
+	sudo addgroup lxd || true
 	sudo snap install lxd
 	sudo snap list
 	sudo snap start lxd
@@ -33,7 +34,6 @@ travis-sysdeps:
 	while [ ! -S /var/snap/lxd/common/lxd/unix.socket ]; do \
 		sleep 0.5; \
 	done
-	sudo addgroup lxd || true
 	sudo usermod -a -G lxd travis
 	sudo lxd --version
 	sudo lxd init --auto
