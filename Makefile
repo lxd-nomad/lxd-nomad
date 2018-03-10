@@ -1,6 +1,7 @@
 .PHONY: install upgrade lint coverage travis docs
 
 install:
+	groups
 	pip install -r requirements-dev.txt
 	pip install -e .
 
