@@ -4,6 +4,7 @@ SHELL:=/bin/bash
 
 install:
 	groups
+	pip install -U pip
 	pip install -r requirements-dev.txt
 	pip install -e .
 
