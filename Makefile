@@ -4,7 +4,6 @@ SHELL:=/bin/bash
 
 install:
 	groups
-	pip install --ignore-installed six
 	pip install -r requirements-dev.txt
 	pip install -e .
 
