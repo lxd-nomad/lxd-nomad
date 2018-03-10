@@ -19,9 +19,7 @@ isort:
 coverage:
 	# py.test --cov-report term-missing --cov lxdock
 	groups
-	sudo usermod -a -G lxd travis
-	groups
-	/snap/bin/lxc launch ubuntu:16.04 xenial
+	lxc launch ubuntu:16.04 xenial
 
 spec:
 	py.test --spec -p no:sugar

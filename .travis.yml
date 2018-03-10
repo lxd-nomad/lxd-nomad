@@ -28,7 +28,7 @@ before_script:
 # We set HOME because lxc needs somewhere writable to not crash during testing.
 script:
   - cp -R /home/travis/.ssh $TRAVIS_BUILD_DIR
-  - HOME=$TRAVIS_BUILD_DIR make travis
+  - sudo -E sudo -u $USER -E bash -c 'HOME=$TRAVIS_BUILD_DIR make travis'
 
 after_success:
   - codecov
