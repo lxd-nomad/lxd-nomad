@@ -30,7 +30,6 @@ travis-sysdeps:
 	sudo apt-get update -q
 	sudo apt-get remove -qy lxd lxd-client
 	sudo apt-get -y install snapd
-	sudo addgroup lxd || true
 	sudo snap install lxd
 	sudo snap list
 	sudo snap start lxd
@@ -38,8 +37,6 @@ travis-sysdeps:
 	while [ ! -S /var/snap/lxd/common/lxd/unix.socket ]; do \
 		sleep 0.5; \
 	done
-	sudo usermod -a -G lxd travis
-	newgrp - lxd
 	sudo lxd --version
 	sudo lxd init --auto
 	sudo lxc network create lxdbr0 ipv6.address=none ipv4.address=10.0.3.1/24 ipv4.nat=true

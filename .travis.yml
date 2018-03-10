@@ -1,11 +1,6 @@
-sudo: required
-dist: trusty
-
-before_install:
-  - make travis-sysdeps
-  - ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa -P ""
-
 language: python
+sudo: true
+dist: trusty
 
 python:
   - "3.4"
@@ -17,6 +12,19 @@ matrix:
   allow_failures:
     - python: "3.7-dev"
 
+install:
+  - make travis-sysdeps
+  - ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa -P ""
+
+env:
+  global:
+    - PATH=/snap/bin:$PATH
+
+before_script:
+  - sudo addgroup lxd || true
+  - sudo usermod -a -G lxd $USER || true
+  - sudo ln -s /snap/bin/lxc /usr/bin/lxc
+
 # We set HOME because lxc needs somewhere writable to not crash during testing.
 script:
   - cp -R /home/travis/.ssh $TRAVIS_BUILD_DIR
@@ -24,6 +32,7 @@ script:
 
 after_success:
   - codecov
+
 branches:
   only:
     - master
