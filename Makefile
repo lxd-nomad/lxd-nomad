@@ -3,6 +3,7 @@ SHELL:=/bin/bash
 .PHONY: install upgrade lint coverage travis docs
 
 install:
+	groups
 	pip install -r requirements-dev.txt
 	pip install -e .
 
@@ -18,7 +19,6 @@ isort:
 
 coverage:
 	# py.test --cov-report term-missing --cov lxdock
-	groups
 	lxc launch ubuntu:16.04 xenial
 
 spec:
