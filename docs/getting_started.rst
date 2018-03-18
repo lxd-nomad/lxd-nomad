@@ -120,9 +120,10 @@ You should now be able to install LXDock using:
 .. note::
 
   It is good practice to install lxdock in a virtualenv rather than installing
-  it globally as root, but make sure you create a python3 virtualenv.
-  To use lxdock from any location without having to activate the virtualenv,
-  you can create a symlink ``/usr/bin/lxdock`` to the virtualenv bin/lxdock.
+  it globally as root, but make sure you always use a python3 virtualenv.
+  To use lxdock from any location without having to activate this virtualenv,
+  you can create a symlink from the lxdock executable in the virtualenv to
+  ``/usr/bin/lxdock`` or ``/usr/local/bin/lxdock``.
 
 .. note::
 
