@@ -74,8 +74,8 @@ You can run the whole test suite using the following command:
   $ py.test
 
 Code coverage should not decrease with pull requests but in some cases we
-realise that isn't always possible, in which case it can then be discussed with
-the maintainers on a Github issue, so that there is some history about this.
+realise that isn't always possible. If this happen it should be discussed on
+a Github issue with the maintainers, so that there is some history about this.
 
 You can easily get the code coverage of the project using the following command:
 
