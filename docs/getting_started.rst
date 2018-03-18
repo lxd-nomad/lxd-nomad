@@ -22,14 +22,14 @@ Prerequisite: install LXD
 You may want to skip this section if you already have a working installation
 of LXD on your system.
 
-For Debian or Ubuntu 16.04 and higher if you prefer to stick with apt:
+LXD is available in the repository for Debian or Ubuntu 16.04 and higher:
 
 .. code-block:: console
 
   $ sudo apt-get install lxd
 
 You can now also install LXD from Snap which works on Ubuntu 14.04 and higher.
-Since the PPA has been deprecated, this is now the easiest way to get
+Since the LXD PPA has been deprecated, this is now the easiest way to get
 the latest version of LXD on Ubuntu.
 
 .. note::
