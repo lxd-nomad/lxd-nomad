@@ -75,7 +75,7 @@ You can run the whole test suite using the following command:
 
 Code coverage should not decrease with pull requests but in some cases we
 realise that isn't always possible. If this happen it should be discussed on
-a Github issue with the maintainers, so that there is some history about this.
+a Github issue with the maintainers, so that there is a record of it.
 
 You can easily get the code coverage of the project using the following command:
 
