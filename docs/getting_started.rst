@@ -22,7 +22,7 @@ Prerequisite: install LXD
 You may want to skip this section if you already have a working installation
 of LXD on your system.
 
-For Debian or Ubuntu 16.04 and higher if prefer to stick with apt:
+For Debian or Ubuntu 16.04 and higher if you prefer to stick with apt:
 
 .. code-block:: console
 
