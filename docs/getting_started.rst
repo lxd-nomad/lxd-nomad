@@ -37,7 +37,7 @@ the latest version of LXD on Ubuntu.
   If you have already installed and configured LXD from apt earlier and
   want to upgrade to the Snap version, you may need to purge LXD packages
   first and reboot for the old network bridge to be removed. You can migrate
-  existing containers using ``lxd.migrate`` after or just start fresh.
+  existing containers using ``lxd.migrate`` or just start fresh.
 
   .. code-block:: console
 
