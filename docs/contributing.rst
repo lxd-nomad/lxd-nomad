@@ -28,6 +28,15 @@ get a working copy of the project using the following commands (eg. using Python
   $ python3.6 -m venv ./env && . ./env/bin/activate
   $ make install
 
+Instead of setting up an environment directly on your development machine itself,
+you can also use the included Vagrantfile for creating a test environment:
+
+.. code-block:: bash
+
+  $ vagrant up
+  $ vagrant ssh
+  $ make coverage
+
 Coding style
 ############
 
@@ -64,8 +73,9 @@ You can run the whole test suite using the following command:
 
   $ py.test
 
-Code coverage should not decrease with pull requests! You can easily get the code coverage of the
-project using the following command:
+Code coverage should not decrease with pull requests if possible but may be
+discussed with the maintainer on a Github issue if required. You can easily get
+the code coverage of the project using the following command:
 
 .. code-block:: bash
 
