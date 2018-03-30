@@ -141,6 +141,15 @@ class Guest(with_metaclass(_GuestBase)):
 
         return int(uid), int(gid)
 
+    def user_home_path(self, username):
+        exit_code, output, _ = self.run(["getent", "passwd", username])
+        return output.split(":")[5]
+
+    def add_profile_d(self, name, content):
+        path = "/etc/profile.d/{}".format(name)
+        self.lxd_container.files.put(path, content)
+        self.run(["chmod", "0644", path])
+
     ########################################################
     # METHODS THAT SHOULD BE OVERRIDEN IN GUEST SUBCLASSES #
     ########################################################
