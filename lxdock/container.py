@@ -174,6 +174,9 @@ class Container:
         # Setup shares if applicable.
         self._setup_shares()
 
+        # Setup X11 if applicable
+        self._setup_x11()
+
         # Override environment variables
         self._setup_env()
 
@@ -378,23 +381,85 @@ class Container:
             shareconf = {'type': 'disk', 'source': source, 'path': share['dest'], }
             container.devices['lxdockshare%s' % i] = shareconf
 
-        guest_username = self.options.get("users", [{"name": "root"}])[0]["name"]
-        host_uid, host_gid = self._host.uidgid()
-        guest_uid, guest_gid = self._guest.uidgid(guest_username)
-        raw_idmap = "uid {} {}\ngid {} {}".format(host_uid, guest_uid, host_gid, guest_gid)
-        raw_idmap_updated = container.config.get("raw.idmap") != raw_idmap
-        if raw_idmap_updated:
-            container.config["raw.idmap"] = raw_idmap
+        raw_idmap_updated = self._setup_guest_idmap()
 
         container.save(wait=True)
 
         if raw_idmap_updated:
-            # the container must be restarted for this to take effect
-            logger.info(
-              "share uid map (raw.idmap) updated, container must be restarted to take effect"
-            )
-            container.restart(wait=True)
-            self._setup_ip()
+            self._restart_guest_for_idmap_update()
+
+    def _setup_x11(self):
+        x11_options = self.options.get('x11', {})
+        enabled = x11_options.get('enabled', True)
+        if not enabled:
+            return
+
+        logger.info("Setting up x11 for guest...")
+
+        if not self._host.has_subuidgid_been_set():
+            raise ContainerOperationFailed()
+
+        container = self._container
+
+        # TODO: some refactoring is needed with the _setup_shares.
+        namespace = "lxdockx11"
+        existing_shares = {
+            k: d for k, d in container.devices.items() if k.startswith(namespace)
+        }
+
+        # Let's get rid of previously set up lxdock shares.
+        for k in existing_shares:
+            del container.devices[k]
+
+        # Share X into the container
+        container.devices['{}X0'.format(namespace)] = {
+            'type': 'disk',
+            'path': '/tmp/.X11-unix/X0',
+            'source': x11_options.get('xsocket_path', '/tmp/.X11-unix/X0'),
+        }
+
+        container.devices['{}Xauthority'.format(namespace)] = {
+            'type': 'disk',
+            'path': os.path.join(self._guest.user_home_path(self._default_username), ".Xauthority"),
+            'source': x11_options.get('xauthority_path', os.path.join(os.path.expanduser("~"), ".Xauthority")),
+        }
+
+        # Share GPU into the container
+        gpu_properties = x11_options.get('gpu_properties', {})
+        gpu_properties['type'] = 'gpu'
+        guest_uid, guest_gid = self._guest.uidgid(self._default_username)
+        if 'uid' not in gpu_properties:
+            gpu_properties['uid'] = str(guest_uid)
+
+        if 'gid' not in gpu_properties:
+            gpu_properties['gid'] = str(guest_gid)
+
+        container.devices["{}gpu".format(namespace)] = gpu_properties
+
+        # Share any other paths into the container as readonly, like
+        # /usr/lib/nvidia-384
+        for i, path in enumerate(x11_options.get("extra_driver_paths", [])):
+            # Only share the ones found in case people have multiple
+            # computers with different configuration running the same
+            # lxdock.yml
+            if os.path.exists(path):
+                logger.warning("{} does not exist, skipping the share".format(path))
+                container.devices["{}driver{}".format(namespace, i)] = {
+                    'path': path,
+                    'source': path,
+                    'readonly': True
+                }
+
+        if x11_options.get("setup_guest_profile_d", True):
+            content = "export DISPLAY=:0"
+            self._guest.add_profile_d("xdisplay.sh", content)
+
+        raw_idmap_updated = self._setup_guest_idmap()
+
+        container.save(wait=True)
+
+        if raw_idmap_updated:
+            self._restart_guest_for_idmap_update()
 
     def _setup_users(self):
         """ Creates users defined in the container's options if applicable. """
@@ -429,6 +494,33 @@ class Container:
             if ip:
                 return ip
         return ''
+
+    def _setup_guest_idmap(self):
+        """Setup the guest idmap. Does not save the container or restart it as
+        it is expected that the caller does that"""
+        guest_username = self._default_username
+        host_uid, host_gid = self._host.uidgid()
+        guest_uid, guest_gid = self._guest.uidgid(guest_username)
+
+        raw_idmap = "uid {} {}\ngid {} {}".format(host_uid, guest_uid, host_gid, guest_gid)
+        raw_idmap_updated = self._container.config.get("raw.idmap") != raw_idmap
+
+        if raw_idmap_updated:
+            self._container.config["raw.idmap"] = raw_idmap
+
+        return raw_idmap_updated
+
+    def _restart_guest_for_idmap_update(self):
+        # the container must be restarted for this to take effect
+        logger.info(
+            "share uid map (raw.idmap) updated, container must be restarted to take effect"
+        )
+        self._container.restart(wait=True)
+        self._setup_ip()
+
+    @property
+    def _default_username(self):
+        return self.options.get("users", [{"name": "root"}])[0]["name"]
 
     @property
     def _container(self):
