@@ -31,19 +31,30 @@ changing them in the host as well, and vice versa. That leaves us with a problem
 solve gracefully. Things become more complicated when our workflow has our container create files in
 that shared folder. What permissions do we give these files?
 
-LXDock tries to answer this by using ACLs. To ensure that files created by the container are
-accessible to you back on the host (and vice versa), every new share has a default ACL giving the
-current user full access to the source folder. An ACL is also added for the root user of the
-container in order to allow him to access the shared folders on the guest side with read/write
-permissions.
+There are two possible ways for making a shared folder actually usable on both ends:
+
+* `Posix ACLs <https://www.reddit.com/r/homelab/comments/4h0erv/resolving_permissions_issues_with_host_bind/>`_
+* ID mapping
+
+LXDock uses the latter method.
+
+Normally, in an unprivileged container, the user (and group) IDs in the container are mapped to 
+high values on the host without any privliges (typically the uid 1000 in the container is mapped to 
+165636 on the host). By using the *raw.idmap* configiration setting of LXD, this behaviour can be overridden.
+
 
 You should note that users created by your provisioning tools (eg. using Ansible) won't be able to
 access your shares on the guest side. This is because LXDock has no knowledge of the users who
 should have access to your shares. Moreover, your users/groups, when the container is initially
-created, don't exist yet! That is why it does nothing. What is suggested is that you take care of it
-in your own provisioning by setting up some ACLs. You can also make use of the ``users`` option
-in order to force LXDock to create some users. The users created this way will be handled by LXDock
-and will have read/write access to the shared folders:
+created, don't exist yet! That is why it does nothing. 
+You should instead make use of the ``users`` option in order to force LXDock to create some users. 
+The first user created this way will have his UID and GID mapped to the host's user and thus have access to the shared folder.
+
+
+Usage
+-----
+
+Use the following *lxdock.yml*:
 
 .. code-block:: yaml
 
@@ -59,30 +70,18 @@ and will have read/write access to the shared folders:
     - name: test02
       home: /opt/test02
 
-Disabling ACL support on shares
--------------------------------
+Furthermore, you need to add the lines
 
-By default ACLs will be turned on for all shares, however it is also possible to disable this
-functionality on a per-share basis.  One reason you might want to do this, is when you are
-using privileged containers and ensuring the container user matches the uid and gid
-of the host system.  This allows a share to be mapped without the use of ACLs, however the
-user should be aware of the security implications of making shares world-writable. This
-may be acceptable for development only containers for example.
+.. code-block:: txt
 
-.. code-block:: yaml
+  lxd:1000:1
+  root:1000:1
 
-  name: myproject
-  image: ubuntu/bionic
-  privileged: yes
+to the files */etc/subuid* and */etc/subgid* (assuming the your host user has the UID and GID 1000).
+This will make the shared folder read and writable by the user 1000 on the host as well as *test01* in the container.
 
-  shares:
-    - source: .
-      dest: /myshare
-      set_host_acl: false
+Caveats
+-------
 
-  users:
-    - name: test01
-
-In this example, the Ansible provisioner can be used to change the uid and gid of
-the test01 user after it has been created by LXDock. How to implement this is
-up to the user, as LXDock does not provide a uid and gid option when creating users.
+* There is currently no automatic way for two users in the container to share a folder with the host
+* The mapping makes all processes in the container by the first user run with the host user's ID, weakening the isolation of the container
