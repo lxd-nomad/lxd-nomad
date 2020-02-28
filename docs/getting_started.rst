@@ -9,7 +9,7 @@ Requirements
 * any provisioning tool you wish to use with LXDock
 
 .. _Python: https://www.python.org
-.. _LXD: https://www.ubuntu.com/cloud/lxd
+.. _LXD: https://linuxcontainers.org/lxd/
 
 Building LXDock on Linux
 ------------------------
