@@ -22,15 +22,15 @@ Prerequisite: install LXD
 You may want to skip this section if you already have a working installation
 of LXD on your system.
 
-LXD is available in the repository for Debian or Ubuntu 16.04 and higher:
+The official install method for LXD is via Snap which works on Ubuntu 14.04 and
+higher and is also available for `other distributions <https://snapcraft.io/docs/installing-snapd>`__.
+To install LXD from a Snap in Ubuntu:
 
 .. code-block:: console
 
-  $ sudo apt-get install lxd
-
-You can now also install LXD from Snap which works on Ubuntu 14.04 and higher.
-Since the LXD PPA has been deprecated, this is now the easiest way to get
-the latest version of LXD on Ubuntu.
+  $ sudo apt-get install snapd
+  $ sudo snap install lxd
+  $ sudo snap start lxd
 
 .. note::
 
@@ -43,15 +43,15 @@ the latest version of LXD on Ubuntu.
 
     $ sudo apt-get purge lxd lxd-client
 
-To install LXD from a Snap instead of apt:
+
+In older versions of Ubuntu (16.04 - 18.04) LXD is also available in the
+standard repository:
 
 .. code-block:: console
 
-  $ sudo apt-get install snapd
-  $ sudo snap install lxd
-  $ sudo snap start lxd
+  $ sudo apt-get install lxd
 
-For Fedora, LXD is available through an experimental COPR repository.
+For Fedora, LXD is also available through an experimental COPR repository.
 Unfortunately SELinux is not yet supported, therefore make sure it is
 disabled or set to permissive. Then run:
 
