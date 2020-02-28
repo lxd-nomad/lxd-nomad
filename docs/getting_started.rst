@@ -4,7 +4,7 @@ Getting started
 Requirements
 ------------
 
-* `Python`_ 3.4+
+* `Python`_ 3.5+
 * `LXD`_ 2.0+
 * any provisioning tool you wish to use with LXDock
 
