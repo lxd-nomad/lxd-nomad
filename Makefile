@@ -13,7 +13,7 @@ upgrade:
 	pip install -e . -U
 
 lint:
-	flake8
+	flake8 --exclude snap,parts,stage,prime
 
 isort:
 	isort --check-only --recursive --diff lxdock tests
