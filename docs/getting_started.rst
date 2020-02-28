@@ -108,8 +108,8 @@ then LXD needs to be restarted.
 To restart LXD use ``sudo snap restart lxd`` or ``sudo service restart lxd``
 or equivalent for your system.
 
-Install LXDock
-~~~~~~~~~~~~~~
+Install LXDock via pip
+~~~~~~~~~~~~~~~~~~~~~~
 
 You should now be able to install LXDock using:
 
@@ -130,6 +130,33 @@ You should now be able to install LXDock using:
   Don't have ``pip3`` installed on your system? Most distros have a specific package for it, it's
   only a matter of installing it. For example, on Debian and Ubuntu, it's ``python3-pip``.
   Otherwise, `Stackoverflow can help you <http://stackoverflow.com/a/6587528>`__.
+
+Install LXDock via snap
+~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to build the snap package under Ubuntu, you need to install the
+`snapcraft` package first. You can then build by running
+
+.. code-block:: console
+
+  $ snapcraft
+
+The package file is then created in the local directory and you can install it
+with
+
+.. code-block:: console
+
+  $ sudo snap install lxdock_VERSION_amd64.snap --dangerous
+
+The `dangerous` flag is necessary, because you are installing a local package
+instead of a signed one downloaded from the official snap store.
+
+The executable can be found at ``/snap/bin/lxdock``. You might need to re-login
+or manually update your PATH environment variable.
+
+.. note::
+
+  Using lxdock from a snap package only works, if LXD itself is also installed via snap.
 
 Command line completion
 -----------------------
