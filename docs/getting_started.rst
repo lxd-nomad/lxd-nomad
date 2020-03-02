@@ -139,7 +139,7 @@ In order to build the snap package under Ubuntu, you need to install the
 
 .. code-block:: console
 
-  $ snapcraft
+  $ make snap
 
 The package file is then created in the local directory and you can install it
 with
