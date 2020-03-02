@@ -12,7 +12,6 @@ parts:
     plugin: python
     python-version: python3
     source: .
-    requirements: requirements-dev.txt
 apps:
   lxdock:
     command: bin/lxdock
