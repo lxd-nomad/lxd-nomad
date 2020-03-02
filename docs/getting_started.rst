@@ -158,6 +158,9 @@ or manually update your PATH environment variable.
 
   Using lxdock from a snap package only works, if LXD itself is also installed via snap.
 
+  If you manually build the snap using ``snapcraft``, you should delete the directories
+  ``parts``, ``stage``, ``prime`` and ``snap`` afterwards, as they might interfere with the tests.
+
 Command line completion
 -----------------------
 
