@@ -19,7 +19,6 @@ def get_schema():
         'shares': [{
             'source': ExpandUserIfExists,
             'dest': str,
-            'set_host_acl': bool,  # TODO: need a way to deprecate this
             'share_properties': {Extra: Coerce(str)},
         }],
         'shell': {
