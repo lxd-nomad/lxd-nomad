@@ -1,4 +1,4 @@
-.PHONY: install install-tests spec upgrade lint coverage isort travis docs clean
+.PHONY: install install-tests spec upgrade lint coverage isort travis docs clean snap
 
 install:
 	pip install -r requirements-dev.txt
@@ -13,7 +13,7 @@ upgrade:
 	pip install -e . -U
 
 lint:
-	flake8
+	flake8 --exclude snap,parts,stage,prime
 
 isort:
 	isort --check-only --recursive --diff lxdock tests
@@ -28,6 +28,11 @@ travis: install-tests lint isort coverage
 
 docs:
 	cd docs && rm -rf _build && make html
+
+snap:
+	snapcraft clean lxdock -s pull
+	snapcraft
+	snapcraft clean lxdock -s pull
 
 clean:
 	find . -name '*.pyc' -exec rm -r {} \;

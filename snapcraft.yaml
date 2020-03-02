@@ -1,0 +1,19 @@
+name: lxdock
+version: git
+summary: lxdock
+description: |
+  Build and orchestrate your development environments with LXD 
+  - a.k.a. Vagrant is Too Heavy
+base: core18
+confinement: strict
+
+parts:
+  lxdock:
+    plugin: python
+    python-version: python3
+    source: .
+apps:
+  lxdock:
+    command: bin/lxdock
+    plugs:
+      - lxd

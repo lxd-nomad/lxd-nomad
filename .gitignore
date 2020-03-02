@@ -17,3 +17,10 @@ env/
 
 # IDE/editor specific ignores
 .idea
+
+# Snap directories
+snap/
+parts/
+stage/
+prime/
+*.snap
