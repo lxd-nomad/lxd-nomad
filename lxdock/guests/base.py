@@ -161,14 +161,22 @@ class Guest(with_metaclass(_GuestBase)):
     # HELPER METHODS #
     ##################
 
-    def run(self, cmd_args, stdin_payload=None):
+    def run(self, cmd_args, environment=None, stdin_payload=None, quiet=True):
         """ Runs the specified command inside the current container. """
         logger.debug('Running {0}'.format(' '.join(cmd_args)))
+
+        if quiet:
+            stdout_handler = stderr_handler = None
+        else:
+            stdout_handler = self._log_stdout
+            stderr_handler = self._log_stderr
+
         exit_code, stdout, stderr = self.lxd_container.execute(
            cmd_args,
+           environment=environment,
            stdin_payload=stdin_payload,
-           stdout_handler=self._log_stdout,
-           stderr_handler=self._log_stderr
+           stdout_handler=stdout_handler,
+           stderr_handler=stderr_handler
         )
         return exit_code, stdout, stderr
 
@@ -208,10 +216,10 @@ class Guest(with_metaclass(_GuestBase)):
     ##################################
 
     def _log_stdout(self, line):
-        logger.info("STDOUT: {}".format(line.strip()))
+        logger.info(line.strip())
 
     def _log_stderr(self, line):
-        logger.info("STDERR: {}".format(line.strip()))
+        logger.info("\033[91m{}\033[0m".format(line.strip()))
 
     def _warn_guest_not_supported(self, for_msg):  # pragma: no cover
         """ Warns the user that a specific operation cannot be performed. """

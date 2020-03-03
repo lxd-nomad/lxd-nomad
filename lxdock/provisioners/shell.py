@@ -25,14 +25,14 @@ class ShellProvisioner(Provisioner):
             with open(self.homedir_expanded_path(self.options['script'])) as fd:
                 guest.lxd_container.files.put(guest_scriptpath, fd.read())
             guest.run(['chmod', '+x', guest_scriptpath])
-            guest.run([guest_scriptpath, ])
+            guest.run([guest_scriptpath, ], quiet=False)
         elif 'script' in self.options and self._is_for_host:
             # Second case: the script is executed on the host side.
             self.host.run([self.homedir_expanded_path(self.options['script']), ])
         elif 'inline' in self.options:
             # Final case: we run a command directly inside the container or outside.
             host_or_guest = self.host if self._side == 'host' else guest
-            host_or_guest.run(['sh', '-c', self.options['inline']])
+            host_or_guest.run(['sh', '-c', self.options['inline']], quiet=False)
 
     def setup(self):
         # nothing to set up, avoid spurious messages with this override.

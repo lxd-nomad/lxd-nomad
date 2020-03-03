@@ -139,7 +139,7 @@ class Host(with_metaclass(_HostBase)):
     # HELPER METHODS #
     ##################
 
-    def run(self, cmd_args):
+    def run(self, cmd_args, quiet=True):
         """ Runs the specified command on the host. """
         cmd = ' '.join(map(shlex.quote, cmd_args))
         logger.debug('Running {0} on the host'.format(cmd))
