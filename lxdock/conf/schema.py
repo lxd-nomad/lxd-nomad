@@ -32,6 +32,7 @@ def get_schema():
             'home': str,
             'password': str,
             'shell': str,
+            'sudoer': bool,
         }],
         'extras': {
             'network_wait_timeout': int
